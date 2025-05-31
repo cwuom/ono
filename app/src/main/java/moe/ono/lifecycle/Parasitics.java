@@ -270,7 +270,7 @@ public class Parasitics {
             Object pmProxy = Proxy.newProxyInstance(iPackageManagerInterface.getClassLoader(),
                     new Class[]{iPackageManagerInterface},
                     new PackageManagerInvocationHandler(packageManagerImpl));
-            sPackageManagerField.set(currentActivityThread, pmProxy);
+            sPackageManagerField.set(sCurrentActivityThread, pmProxy);
             mPmField.set(pm, pmProxy);
             //End of PackageManager
             sActStubHookEndTime = System.currentTimeMillis();
