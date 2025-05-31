@@ -14,8 +14,6 @@ on:
       - '.github/workflows/**'
       - '.idea/**'
   pull_request:
-    branches:
-      - main
     paths-ignore:
       - '**/*.md'
       - '**/*.txt'
