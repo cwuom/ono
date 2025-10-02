@@ -36,7 +36,7 @@ import moe.ono.util.SyncUtils
 @SuppressLint("DiscouragedApi")
 @HookItem(
     path = "聊天与消息/快捷菜单",
-    description = "长按红包按钮调出快捷菜单，部分功能依赖此选项，推荐开启"
+    description = "长按红包或拍照按钮调出快捷菜单，部分功能依赖此选项，推荐开启"
 )
 class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
     private val classNames: List<String> = mutableListOf(
@@ -52,7 +52,7 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
 
             hookAfter(method) { param: MethodHookParam ->
                 val imageView = param.result as ImageView
-                if ("红包".contentEquals(imageView.contentDescription)) {
+                if ("红包".contentEquals(imageView.contentDescription) || "拍照".contentEquals(imageView.contentDescription)) {
                     imageView.setOnLongClickListener { view: View ->
                         val fixContext =
                             CommonContextWrapper.createAppCompatContext(imageView.context)
