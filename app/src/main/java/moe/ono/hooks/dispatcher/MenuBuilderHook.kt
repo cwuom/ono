@@ -3,6 +3,7 @@ package moe.ono.hooks.dispatcher
 import de.robv.android.xposed.XC_MethodHook
 import moe.ono.hooks._base.ApiHookItem
 import moe.ono.hooks._core.annotation.HookItem
+import moe.ono.hooks.item.chat.MessageEncryptor
 import moe.ono.hooks.item.chat.StickerPanelEntry
 import moe.ono.hooks.item.developer.QQMessageFetcher
 import moe.ono.hooks.item.entertainment.ModifyTextMessage
@@ -18,7 +19,8 @@ class MenuBuilderHook : ApiHookItem() {
         QQMessageTracker(),
         QQMessageFetcher(),
         ModifyTextMessage(),
-        RespondFace()
+        RespondFace(),
+        MessageEncryptor(),
     )
 
     override fun entry(classLoader: ClassLoader) {

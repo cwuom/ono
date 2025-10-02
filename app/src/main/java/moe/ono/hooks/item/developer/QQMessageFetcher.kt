@@ -80,9 +80,11 @@ class QQMessageFetcher : BaseSwitchFunctionHookItem(), OnMenuBuilder {
         param.result = listOf(item) + param.result as List<*>
     }
 
-    private fun pullGroupMsg(msgRecord: MsgRecord){
-        val seq = msgRecord.msgSeq
-        sendPacket("MessageSvc.PbGetGroupMsg", """{"1": ${msgRecord.peerUid}, "2": ${seq}, "3": ${seq}, "6": 0}""")
+    companion object {
+        fun pullGroupMsg(msgRecord: MsgRecord){
+            val seq = msgRecord.msgSeq
+            sendPacket("MessageSvc.PbGetGroupMsg", """{"1": ${msgRecord.peerUid}, "2": ${seq}, "3": ${seq}, "6": 0}""")
+        }
     }
 
     private fun pullC2CMsg(msgRecord: MsgRecord){

@@ -4,6 +4,8 @@ import com.tencent.qphone.base.remote.FromServiceMsg
 import com.tencent.qphone.base.remote.ToServiceMsg
 import com.tencent.qqnt.kernel.nativeinterface.PushExtraInfo
 import de.robv.android.xposed.XposedHelpers.callMethod
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.readBytes
 import kotlinx.serialization.json.*
 import moe.ono.R
 import moe.ono.bridge.ntapi.RelationNTUinAndUidApi.getUinFromUid
@@ -12,19 +14,26 @@ import moe.ono.config.CacheConfig
 import moe.ono.config.CacheConfig.getIQQntWrapperSessionInstance
 import moe.ono.config.CacheConfig.setRKeyGroup
 import moe.ono.config.CacheConfig.setRKeyPrivate
+import moe.ono.config.ConfigManager
 import moe.ono.config.ONOConf
+import moe.ono.constants.Constants
+import moe.ono.creator.JsonViewerDialog
 import moe.ono.creator.PacketHelperDialog
 import moe.ono.creator.QQMessageFetcherResultDialog
 import moe.ono.hooks._base.ApiHookItem
 import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.hooks._core.factory.HookItemFactory.getItem
+import moe.ono.hooks.base.util.Toasts
+import moe.ono.hooks.item.chat.MessageEncryptor
 import moe.ono.hooks.item.developer.QQPacketHelperC2CDisplayFixer
+import moe.ono.hooks.item.entertainment.ModifyTextMessage
 import moe.ono.hooks.protocol.buildMessage
 import moe.ono.reflex.XField
 import moe.ono.reflex.XMethod
 import moe.ono.service.QQInterfaces
 import moe.ono.service.inject.ServletPool.injectServlet
 import moe.ono.ui.CommonContextWrapper
+import moe.ono.util.AesUtils
 import moe.ono.util.ContextUtils
 import moe.ono.util.FunProtoData
 import moe.ono.util.FunProtoData.getUnpPackage
@@ -265,6 +274,74 @@ class QQMsgRespHandler : ApiHookItem() {
                     Logger.d("on MessageSvc.PbGetGroupMsg")
 
                     Logger.d("obj: " + obj.toString(4))
+
+                    if (MessageEncryptor.decryptMsg) {
+                        MessageEncryptor.decryptMsg = false
+                        val key = "${MessageEncryptor.peerUid}:${MessageEncryptor.msgSeq}:${MessageEncryptor.senderUin}"
+                        MessageEncryptor.peerUid = ""
+                        MessageEncryptor.senderUin = ""
+                        MessageEncryptor.msgSeq = ""
+
+                        val encryptKey = ConfigManager.dGetString(
+                            Constants.PrekCfgXXX + getItem(MessageEncryptor::class.java).path,
+                            "ono"
+                        )
+                        if (encryptKey.isBlank()) {
+                            return@hookBefore
+                        }
+
+                        val aesKey = AesUtils.md5(encryptKey)
+                        val encryptMsg = obj.optJSONObject("6")?.optJSONObject("3")?.optJSONObject("1")
+                            ?.optJSONArray("2")?.optJSONObject(2)?.optJSONObject("1")?.optJSONObject("12")
+                            ?.optString("1")
+
+                        if (encryptMsg == null) {
+                            Toasts.error(ContextUtils.getCurrentActivity(), "非加密消息")
+                            return@hookBefore
+                        }
+
+                        val hexStr = encryptMsg.replace("hex->", "")
+                        val byteArray = MessageEncryptor.hexToBytes(hexStr)
+                        val encryptBuffer = ByteReadPacket(byteArray)
+
+                        if (0x114514 != encryptBuffer.readInt()) {
+                            Toasts.error(ContextUtils.getCurrentActivity(), "非加密消息")
+                            return@hookBefore
+                        }
+
+                        if (encryptKey.hashCode() != encryptBuffer.readInt()) {
+                            Toasts.error(ContextUtils.getCurrentActivity(), "密钥不匹配")
+                            return@hookBefore
+                        }
+
+                        val decryptMsg = AesUtils.aesDecrypt(encryptBuffer.readBytes(), aesKey)
+                        val decryptData = FunProtoData()
+                        decryptData.fromBytes(getUnpPackage(decryptMsg))
+
+                        val decryptMsgData = decryptData.toJSON().optJSONObject("1")
+                            ?.optJSONArray("2")
+                            ?.optJSONObject(2)
+                            ?.optJSONObject("1")
+                            ?.optString("1")
+
+                        if (decryptMsgData != null) {
+                            ModifyTextMessage.modifyMap.put(key, decryptMsgData)
+                            Toasts.success(ContextUtils.getCurrentActivity(), "解密成功重新进入本界面生效")
+                            return@hookBefore
+                        }
+
+                        SyncUtils.runOnUiThread {
+                            JsonViewerDialog.createView(
+                                CommonContextWrapper.createAppCompatContext(ContextUtils.getCurrentActivity()),
+                                decryptData.toJSON()
+                            )
+
+                            Toasts.success(ContextUtils.getCurrentActivity(), "不支持的消息类型, 已打开原 PB")
+                        }
+
+                        return@hookBefore
+                    }
+
                     SyncUtils.runOnUiThread { QQMessageFetcherResultDialog.createView(
                         CommonContextWrapper.createAppCompatContext(ContextUtils.getCurrentActivity()), obj) }
 

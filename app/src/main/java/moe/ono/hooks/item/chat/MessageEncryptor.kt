@@ -11,6 +11,10 @@ import kotlinx.io.core.writeFully
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToByteArray
 import kotlinx.serialization.protobuf.ProtoBuf
+import moe.ono.R
+import moe.ono.bridge.ntapi.ChatTypeConstants.C2C
+import moe.ono.bridge.ntapi.ChatTypeConstants.GROUP
+import moe.ono.bridge.ntapi.MsgServiceHelper
 import moe.ono.config.ConfigManager
 import moe.ono.config.DailySaying
 import moe.ono.ext.getUnknownObject
@@ -18,20 +22,42 @@ import moe.ono.ext.getUnknownObjects
 import moe.ono.ext.toInnerValuesString
 import moe.ono.hooks._base.BaseClickableFunctionHookItem
 import moe.ono.hooks._core.annotation.HookItem
+import moe.ono.hooks._core.factory.HookItemFactory.getItem
 import moe.ono.hooks.base.util.Toasts
+import moe.ono.hooks.dispatcher.OnMenuBuilder
 import moe.ono.hooks.item.developer.QQHookCodec
+import moe.ono.hooks.item.developer.QQMessageFetcher
 import moe.ono.hooks.protocol.entries.QQSsoSecureInfo
 import moe.ono.hooks.protocol.entries.TextMsgExtPbResvAttr
 import moe.ono.hostInfo
 import moe.ono.loader.hookapi.IHijacker
+import moe.ono.reflex.Reflex
 import moe.ono.util.AesUtils.aesEncrypt
 import moe.ono.util.AesUtils.md5
+import moe.ono.util.AppRuntimeHelper
+import moe.ono.util.ContextUtils
+import moe.ono.util.CustomMenu
 import moe.ono.util.Logger
+import moe.ono.util.Session
 import moe.ono.util.SyncUtils
 
 @SuppressLint("DiscouragedApi")
-@HookItem(path = "聊天与消息/群聊加密消息", description = "发送的消息将加密抄送，仅针对群聊\n* 开启需重启\n* 禁止用于非法用途，违者后果自负\n* 需开启 '开发者选项/注入 CodecWarpper'")
-class MessageEncryptor : BaseClickableFunctionHookItem() {
+@HookItem(path = "聊天与消息/群聊加密消息", description = "发送的消息将加密抄送，仅针对群聊\n* 长按文本消息可手动解密\n* 手动解密功能依赖 娱乐功能/修改文本消息\n* 开启需重启\n* 禁止用于非法用途，违者后果自负\n* 需开启 '开发者选项/注入 CodecWarpper'")
+class MessageEncryptor : BaseClickableFunctionHookItem(), OnMenuBuilder {
+    companion object {
+        var decryptMsg = false
+        var msgSeq = ""
+        var peerUid = ""
+        var senderUin = ""
+
+        fun hexToBytes(hex: String): ByteArray {
+            require(hex.length % 2 == 0) { "Invalid hex string length." }
+            return ByteArray(hex.length / 2) { i ->
+                hex.substring(i * 2, i * 2 + 2).toInt(16).toByte()
+            }
+        }
+    }
+
     override fun entry(classLoader: ClassLoader) {
         QQHookCodec.hijackers.add(object: IHijacker {
             override fun onHandle(
@@ -168,6 +194,64 @@ class MessageEncryptor : BaseClickableFunctionHookItem() {
         return newMsgBody.build()
     }
 
+    override val targetTypes = arrayOf(
+        "com.tencent.mobileqq.aio.msglist.holder.component.text.AIOTextContentComponent",
+    )
+
+    override fun onGetMenu(aioMsgItem: Any, targetType: String, param: XC_MethodHook.MethodHookParam) {
+        if (!getItem(this.javaClass).isEnabled) {
+            return
+        }
+
+        val item: Any = CustomMenu.createItemIconNt(
+            aioMsgItem,
+            "解密",
+            R.drawable.ic_telegram,
+            R.id.item_message_encryptor
+        ) {
+            try {
+                val msgID = Reflex.invokeVirtual(aioMsgItem, "getMsgId") as Long
+                val msgIDs = java.util.ArrayList<Long>()
+                msgIDs.add(msgID)
+                AppRuntimeHelper.getAppRuntime()
+                    ?.let {
+                        MsgServiceHelper.getKernelMsgService(
+                            it
+                        )
+                    }?.getMsgsByMsgId(
+                        Session.getContact(),
+                        msgIDs
+                    ) { _, _, msgList ->
+                        SyncUtils.runOnUiThread {
+                            for (msgRecord in msgList) {
+//                                if (msgRecord.msgType != 2 || msgRecord.subMsgType != 1) {
+//                                    Toasts.error(ContextUtils.getCurrentActivity(), "仅支持文本消息")
+//                                    return@runOnUiThread
+//                                }
+
+                                when (msgRecord.chatType) {
+                                    C2C -> {
+                                        Toasts.error(ContextUtils.getCurrentActivity(), "仅支持群聊消息")
+                                        break
+                                    }
+                                    GROUP -> {
+                                        decryptMsg = true
+                                        msgSeq = msgRecord.msgSeq.toString()
+                                        peerUid = msgRecord.peerUid
+                                        senderUin = msgRecord.senderUin.toString()
+                                        QQMessageFetcher.pullGroupMsg(msgRecord)
+                                    }
+                                }
+                            }
+                        }
+                    }
+            } catch (e: Exception) {
+                Logger.e("QQPullMsgEntry.msgLongClick", e)
+            }
+            Unit
+        }
+        param.result = listOf(item) + param.result as List<*>
+    }
 
     override fun alwaysRun(): Boolean {
         return true

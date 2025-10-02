@@ -9,4 +9,5 @@
     <item name="ivTitleName" type="id"/>
     <item name="item_modify_text_message" type="id" />
     <item name="item_respond_face" type="id" />
+    <item name="item_message_encryptor" type="id" />
 </resources>
