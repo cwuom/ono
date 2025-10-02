@@ -2,6 +2,7 @@ package moe.ono.loader.legacy;
 
 import static moe.ono.constants.PackageConstants.PACKAGE_NAME_QQ;
 import static moe.ono.constants.PackageConstants.PACKAGE_NAME_SELF;
+import static moe.ono.constants.PackageConstants.PACKAGE_NAME_TIM;
 
 import androidx.annotation.Keep;
 
@@ -40,6 +41,14 @@ public class LegacyHookEntry implements IXposedHookLoadPackage, IXposedHookZygot
                 break;
             }
             case PACKAGE_NAME_QQ:
+                if (sInitZygoteStartupParam == null) {
+                    throw new IllegalStateException("handleLoadPackage: sInitZygoteStartupParam is null");
+                }
+                sCurrentPackageName = lpparam.packageName;
+                ModuleLoader.initialize(lpparam.appInfo.dataDir, lpparam.classLoader,
+                        Xp51HookImpl.INSTANCE, Xp51HookImpl.INSTANCE, getModulePath(), true);
+                break;
+            case PACKAGE_NAME_TIM:
                 if (sInitZygoteStartupParam == null) {
                     throw new IllegalStateException("handleLoadPackage: sInitZygoteStartupParam is null");
                 }
