@@ -7,6 +7,7 @@ import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.hooks.clazz
 import moe.ono.hooks.item.chat.QQBubbleRedirect.Companion.injectJavaScriptLogic
 import moe.ono.hooks.item.chat.QQBubbleRedirect.Companion.injectWebViewForBubble
+import moe.ono.hooks.item.developer.InjectVConsole
 import moe.ono.util.Logger
 import moe.ono.util.SyncUtils
 import moe.ono.util.Utils
@@ -35,6 +36,12 @@ class QQOnLoadWebView : ApiHookItem() {
             Logger.d("QQOnLoadWebView -> onPageFinished")
 
             try {
+                InjectVConsole.injectJavaScriptLogic(
+                    x5WebView = it.args[0],
+                    x5WebViewClass = CacheConfig.getX5WebViewClass(),
+                    x5ValueCallbackClass = CacheConfig.getX5ValueCallbackClass()
+                )
+
                 injectJavaScriptLogic(
                     x5WebView = it.args[0],
                     itemId = CacheConfig.getItemID(),
@@ -50,6 +57,8 @@ class QQOnLoadWebView : ApiHookItem() {
         hookAfter(mLoadUrl) {
             val url = it.args[0] as String
             Logger.d("loadUrl: $url")
+
+            InjectVConsole.injectWebViewForVConsole(it.thisObject)
 
             if (url.startsWith("https://zb.vip.qq.com/mall/item-detail?appid=2&")) {
                 val webView = it.thisObject
