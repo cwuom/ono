@@ -1,6 +1,7 @@
 package moe.ono.loader.modern;
 
 import static moe.ono.constants.PackageConstants.PACKAGE_NAME_QQ;
+import static moe.ono.constants.PackageConstants.PACKAGE_NAME_TIM;
 
 import android.content.pm.ApplicationInfo;
 
@@ -34,7 +35,7 @@ public class ModernHookEntry extends XposedModule {
     public void onPackageLoaded(@NonNull PackageLoadedParam param) {
         String packageName = param.getPackageName();
         String processName = param.getApplicationInfo().processName;
-        if (packageName.equals(PACKAGE_NAME_QQ)) {
+        if (packageName.equals(PACKAGE_NAME_QQ) || packageName.equals(PACKAGE_NAME_TIM)) {
             if (param.isFirstPackage()) {
                 String modulePath = this.getApplicationInfo().sourceDir;
                 StartupInfo.setModulePath(modulePath);
