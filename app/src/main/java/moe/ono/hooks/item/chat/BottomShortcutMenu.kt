@@ -58,23 +58,36 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
                             if (parent is ViewGroup) {
                                 Logger.d(parent::class.java.name)
 
-                                val onoImageView = ImageView(parent.context)
-                                onoImageView.setImageResource(R.drawable.ic_ouo)
-
-                                val layoutParams = LinearLayout.LayoutParams(0, (28.0f * parent.resources.displayMetrics.density + 0.5f).toInt())
-                                layoutParams.weight = 1.0f
-                                layoutParams.gravity = 16
-
-                                onoImageView.layoutParams = layoutParams
-
-                                onoImageView.setOnClickListener { view ->
-                                    val fixContext =
-                                        CommonContextWrapper.createAppCompatContext(imageView.context)
-                                    popMenu(fixContext, view)
-                                    true
+                                fun foundONO(view: ViewGroup) : Boolean {
+                                    for (i in 0 until view.childCount) {
+                                        val child = view.getChildAt(i)
+                                        if (child.contentDescription == "ONO") {
+                                            return true
+                                        }
+                                    }
+                                    return false
                                 }
 
-                                parent.addView(onoImageView, 4)
+                                if (!foundONO(parent)) {
+                                    val onoImageView = ImageView(parent.context)
+                                    onoImageView.setImageResource(R.drawable.ic_ouo)
+                                    onoImageView.contentDescription = "ONO"
+
+                                    val layoutParams = LinearLayout.LayoutParams(0, (28.0f * parent.resources.displayMetrics.density + 0.5f).toInt())
+                                    layoutParams.weight = 1.0f
+                                    layoutParams.gravity = 16
+
+                                    onoImageView.layoutParams = layoutParams
+
+                                    onoImageView.setOnClickListener { view ->
+                                        val fixContext =
+                                            CommonContextWrapper.createAppCompatContext(imageView.context)
+                                        popMenu(fixContext, view)
+                                        true
+                                    }
+
+                                    parent.addView(onoImageView, 4)
+                                }
                             }
                         }
 
