@@ -4,22 +4,23 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import com.lxj.xpopup.XPopup
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
 import de.robv.android.xposed.XposedHelpers
-import moe.ono.bridge.ntapi.ChatTypeConstants.GROUP
+import moe.ono.R
 import moe.ono.config.CacheConfig
 import moe.ono.config.ConfigManager
 import moe.ono.constants.Constants
-import moe.ono.creator.PacketHelperDialog
 import moe.ono.creator.FakeFileSender
+import moe.ono.creator.PacketHelperDialog
 import moe.ono.creator.QQMessageTrackerDialog
 import moe.ono.hooks.XHook
 import moe.ono.hooks._base.BaseSwitchFunctionHookItem
 import moe.ono.hooks._core.annotation.HookItem
-import moe.ono.hooks._core.factory.HookItemFactory
 import moe.ono.hooks._core.factory.HookItemFactory.getItem
 import moe.ono.hooks.base.util.Toasts
 import moe.ono.hooks.item.developer.QQHookCodec
@@ -27,16 +28,14 @@ import moe.ono.hooks.item.developer.QQPacketHelperEntry
 import moe.ono.hooks.item.sigma.QQMessageTracker
 import moe.ono.reflex.XMethod
 import moe.ono.ui.CommonContextWrapper
-import moe.ono.util.ContactUtils
 import moe.ono.util.Initiator
 import moe.ono.util.Logger
-import moe.ono.util.Session
 import moe.ono.util.SyncUtils
 
 @SuppressLint("DiscouragedApi")
 @HookItem(
     path = "聊天与消息/快捷菜单",
-    description = "长按红包或拍照按钮调出快捷菜单，部分功能依赖此选项，推荐开启"
+    description = "点击聊天页面下方 ONO 图标调出快捷菜单，部分功能依赖此选项，推荐开启"
 )
 class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
     private val classNames: List<String> = mutableListOf(
@@ -52,13 +51,36 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
 
             hookAfter(method) { param: MethodHookParam ->
                 val imageView = param.result as ImageView
-                if ("红包".contentEquals(imageView.contentDescription) || "拍照".contentEquals(imageView.contentDescription)) {
-                    imageView.setOnLongClickListener { view: View ->
-                        val fixContext =
-                            CommonContextWrapper.createAppCompatContext(imageView.context)
-                        popMenu(fixContext, view)
-                        true
-                    }
+                if ("拍照".contentEquals(imageView.contentDescription)) {
+                    imageView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+                        override fun onViewAttachedToWindow(v: View) {
+                            val parent = v.parent
+                            if (parent is ViewGroup) {
+                                Logger.d(parent::class.java.name)
+
+                                val onoImageView = ImageView(parent.context)
+                                onoImageView.setImageResource(R.drawable.ic_ouo)
+
+                                val layoutParams = LinearLayout.LayoutParams(0, (28.0f * parent.resources.displayMetrics.density + 0.5f).toInt())
+                                layoutParams.weight = 1.0f
+                                layoutParams.gravity = 16
+
+                                onoImageView.layoutParams = layoutParams
+
+                                onoImageView.setOnClickListener { view ->
+                                    val fixContext =
+                                        CommonContextWrapper.createAppCompatContext(imageView.context)
+                                    popMenu(fixContext, view)
+                                    true
+                                }
+
+                                parent.addView(onoImageView, 4)
+                            }
+                        }
+
+                        override fun onViewDetachedFromWindow(v: View) {
+                        }
+                    })
                 }
             }
 
