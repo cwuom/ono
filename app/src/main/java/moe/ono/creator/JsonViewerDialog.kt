@@ -8,7 +8,6 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.Button
 import android.widget.RadioGroup
-import android.widget.TextView
 import com.lxj.xpopup.XPopup
 import com.lxj.xpopup.core.BasePopupView
 import com.lxj.xpopup.core.BottomPopupView
@@ -30,10 +29,7 @@ class JsonViewerDialog(context: Context) : BottomPopupView(context) {
             val jsonViewer = findViewById<JsonViewer>(R.id.rv_json)
             val btnCopy = findViewById<Button>(R.id.btn_copy)
             val rgType = findViewById<RadioGroup>(R.id.rg_type)
-            val title = findViewById<TextView>(R.id.title)
             var copyText: String
-
-            title.text = "Json Viewer"
 
             jsonViewer.setJson(content)
 
@@ -50,6 +46,40 @@ class JsonViewerDialog(context: Context) : BottomPopupView(context) {
 
         }, 100)
     }
+
+    private fun formatMsgRecord(input: String): String {
+        var indentLevel = 0
+        val indentStep = "    "
+        val result = StringBuilder()
+
+        input.forEach { char ->
+            when (char) {
+                '{' -> {
+                    result.append(char)
+                    result.append("\n")
+                    indentLevel++
+                    result.append(indentStep.repeat(indentLevel))
+                }
+                '}' -> {
+                    result.append("\n")
+                    indentLevel = if (indentLevel > 0) indentLevel - 1 else 0
+                    result.append(indentStep.repeat(indentLevel))
+                    result.append(char)
+                }
+                ',' -> {
+                    result.append(char)
+                    result.append("\n")
+                    result.append(indentStep.repeat(indentLevel))
+                }
+                else -> {
+                    result.append(char)
+                }
+            }
+        }
+        return result.toString()
+    }
+
+
 
 
     override fun getImplLayoutId(): Int {
