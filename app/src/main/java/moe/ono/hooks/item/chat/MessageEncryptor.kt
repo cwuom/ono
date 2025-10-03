@@ -17,12 +17,12 @@ import moe.ono.bridge.ntapi.ChatTypeConstants.GROUP
 import moe.ono.bridge.ntapi.MsgServiceHelper
 import moe.ono.config.ConfigManager
 import moe.ono.config.DailySaying
+import moe.ono.constants.Constants
 import moe.ono.ext.getUnknownObject
 import moe.ono.ext.getUnknownObjects
 import moe.ono.ext.toInnerValuesString
 import moe.ono.hooks._base.BaseClickableFunctionHookItem
 import moe.ono.hooks._core.annotation.HookItem
-import moe.ono.hooks._core.factory.HookItemFactory.getItem
 import moe.ono.hooks.base.util.Toasts
 import moe.ono.hooks.dispatcher.OnMenuBuilder
 import moe.ono.hooks.item.developer.QQHookCodec
@@ -42,7 +42,7 @@ import moe.ono.util.Session
 import moe.ono.util.SyncUtils
 
 @SuppressLint("DiscouragedApi")
-@HookItem(path = "聊天与消息/群聊加密消息", description = "发送的消息将加密抄送，仅针对群聊\n* 长按文本消息可手动解密\n* 手动解密功能依赖 娱乐功能/修改文本消息\n* 开启需重启\n* 禁止用于非法用途，违者后果自负\n* 需开启 '开发者选项/注入 CodecWarpper'")
+@HookItem(path = "聊天与消息/群聊加密消息", description = "发送的消息将加密抄送，仅针对群聊\n* 长按文本消息可手动解密(需开启手动解密)\n* 手动解密功能依赖 娱乐功能/修改文本消息\n* 开启需重启\n* 禁止用于非法用途，违者后果自负\n* 需开启 '开发者选项/注入 CodecWarpper'")
 class MessageEncryptor : BaseClickableFunctionHookItem(), OnMenuBuilder {
     companion object {
         var decryptMsg = false
@@ -199,7 +199,7 @@ class MessageEncryptor : BaseClickableFunctionHookItem(), OnMenuBuilder {
     )
 
     override fun onGetMenu(aioMsgItem: Any, targetType: String, param: XC_MethodHook.MethodHookParam) {
-        if (!getItem(this.javaClass).isEnabled) {
+        if (!ConfigManager.dGetBoolean(Constants.PrekCfgXXX + "manualDecrypt")) {
             return
         }
 

@@ -507,6 +507,11 @@ object ClickableFunctionDialog {
         checkBox.isChecked = item.isEnabled
         root.addView(checkBox)
 
+        val manualDecryptCheckBox = MaterialCheckBox(context)
+        manualDecryptCheckBox.text = "启用手动解密"
+        manualDecryptCheckBox.isChecked = ConfigManager.dGetBoolean(Constants.PrekCfgXXX + "manualDecrypt")
+        root.addView(manualDecryptCheckBox)
+
         val inputMarginTop = (8 * context.resources.displayMetrics.density).toInt()
 
         val tilKey = TextInputLayout(context)
@@ -567,6 +572,10 @@ object ClickableFunctionDialog {
                     item.startLoad()
                 } else {
                 }
+            }
+
+            manualDecryptCheckBox.setOnCheckedChangeListener { _, isChecked ->
+                ConfigManager.dPutBoolean(Constants.PrekCfgXXX + "manualDecrypt", isChecked)
             }
 
             val keyWatcher: TextWatcher = object : TextWatcher {
