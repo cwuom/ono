@@ -18,6 +18,7 @@ import moe.ono.config.CacheConfig
 import moe.ono.config.ConfigManager
 import moe.ono.constants.Constants
 import moe.ono.creator.FakeFileSender
+import moe.ono.creator.GetChannelArkDialog
 import moe.ono.creator.PacketHelperDialog
 import moe.ono.creator.QQMessageTrackerDialog
 import moe.ono.hooks.XHook
@@ -133,6 +134,9 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
         val getBknByCookie = ConfigManager.getDefaultConfig().getBooleanOrFalse(Constants.PrekXXX + getItem(
             GetBknByCookie::class.java).path)
 
+        val getChannelArk = ConfigManager.getDefaultConfig().getBooleanOrFalse(Constants.PrekXXX + getItem(
+            GetChannelArk::class.java).path)
+
         val items = ArrayList<String>()
         if (qqPacketHelper) {
             items.add("QQPacketHelper")
@@ -148,6 +152,9 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
         }
         if (getBknByCookie) {
             items.add("GetBknByCookie")
+        }
+        if (getChannelArk) {
+            items.add("GetChannelArk")
         }
 
         if (getItem(QQHookCodec::class.java).isEnabled) {
@@ -247,6 +254,9 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
 
                             builder.show()
                         }
+                    }
+                    "GetChannelArk" -> {
+                        SyncUtils.runOnUiThread { GetChannelArkDialog.createView(view.context) }
                     }
                 }
             }
