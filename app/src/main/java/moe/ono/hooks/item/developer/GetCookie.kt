@@ -35,28 +35,28 @@ class GetCookie : BaseSwitchFunctionHookItem() {
 
                 val getPSkeyMethod = ticketManager.javaClass.getDeclaredMethod("getPskey", String::class.java, String::class.java)
                 val getSkeyMethod = ticketManager.javaClass.getDeclaredMethod("getSkey", String::class.java)
-                val getSuperkeyMethod = ticketManager.javaClass.getDeclaredMethod("getSuperkey", String::class.java)
+//                val getSuperkeyMethod = ticketManager.javaClass.getDeclaredMethod("getSuperkey", String::class.java)
                 val getPt4TokenMethod = ticketManager.javaClass.getDeclaredMethod("getPt4Token", String::class.java, String::class.java)
 
                 val pskey = getPSkeyMethod.invoke(ticketManager, uin, domain) as String
                 val skey = getSkeyMethod.invoke(ticketManager, uin) as String
-                val superkey = getSuperkeyMethod.invoke(ticketManager, uin) as String?
+//                val superkey = getSuperkeyMethod.invoke(ticketManager, uin) as String?
                 val pt4Token = getPt4TokenMethod.invoke(ticketManager, uin, domain) as String?
                 val p_uin = "o$uin"
 
                 val cookieMap: MutableMap<String, String> = HashMap()
 
-                Logger.d("PSkey: $pskey skey: $skey superkey: $superkey pt4Token: $pt4Token")
+                Logger.d("PSkey: $pskey skey: $skey pt4Token: $pt4Token")
 
                 cookieMap["uin"] = p_uin
                 cookieMap["p_uin"] = p_uin
                 cookieMap["skey"] = skey
                 cookieMap["p_skey"] = pskey
-                if (superkey != null) {
-                    cookieMap["superkey"] = superkey
-                }
+//                if (superkey != null) {
+//                    cookieMap["superkey"] = superkey
+//                }
                 if (pt4Token != null) {
-                    cookieMap["pt4Token "] = pt4Token
+                    cookieMap["pt4Token"] = pt4Token
                 }
 
                 val cookie = buildString {
@@ -93,26 +93,26 @@ class GetCookie : BaseSwitchFunctionHookItem() {
 
                 val getPSkeyMethod = ticketManager.javaClass.getDeclaredMethod("getPskey", String::class.java, String::class.java)
                 val getSkeyMethod = ticketManager.javaClass.getDeclaredMethod("getSkey", String::class.java)
-                val getSuperkeyMethod = ticketManager.javaClass.getDeclaredMethod("getSuperkey", String::class.java)
+                // val getSuperkeyMethod = ticketManager.javaClass.getDeclaredMethod("getSuperkey", String::class.java)
                 val getPt4TokenMethod = ticketManager.javaClass.getDeclaredMethod("getPt4Token", String::class.java, String::class.java)
 
                 val pskey = getPSkeyMethod.invoke(ticketManager, uin, domain) as String
                 val skey = getSkeyMethod.invoke(ticketManager, uin) as String
-                val superkey = getSuperkeyMethod.invoke(ticketManager, uin) as String?
+                // val superkey = getSuperkeyMethod.invoke(ticketManager, uin) as String?
                 val pt4Token = getPt4TokenMethod.invoke(ticketManager, uin, domain) as String?
                 val p_uin = "o$uin"
 
                 val cookieMap: MutableMap<String, String> = HashMap()
 
-                Logger.d("PSkey: $pskey skey: $skey superkey: $superkey pt4Token: $pt4Token")
+                Logger.d("PSkey: $pskey skey: $skey pt4Token: $pt4Token")
 
                 cookieMap["uin"] = p_uin
                 cookieMap["p_uin"] = p_uin
                 cookieMap["skey"] = skey
                 cookieMap["p_skey"] = pskey
-                if (superkey != null) {
-                    cookieMap["superkey"] = superkey
-                }
+//                if (superkey != null) {
+//                    cookieMap["superkey"] = superkey
+//                }
                 if (pt4Token != null) {
                     cookieMap["pt4Token "] = pt4Token
                 }
