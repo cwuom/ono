@@ -5,8 +5,10 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.lxj.xpopup.XPopup
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
@@ -23,6 +25,8 @@ import moe.ono.hooks._base.BaseSwitchFunctionHookItem
 import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.hooks._core.factory.HookItemFactory.getItem
 import moe.ono.hooks.base.util.Toasts
+import moe.ono.hooks.item.developer.GetBknByCookie
+import moe.ono.hooks.item.developer.GetCookie
 import moe.ono.hooks.item.developer.QQHookCodec
 import moe.ono.hooks.item.developer.QQPacketHelperEntry
 import moe.ono.hooks.item.sigma.QQMessageTracker
@@ -123,6 +127,12 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
             ).path
         )
 
+        val getCookie = ConfigManager.getDefaultConfig().getBooleanOrFalse(Constants.PrekXXX + getItem(
+            GetCookie::class.java).path)
+
+        val getBknByCookie = ConfigManager.getDefaultConfig().getBooleanOrFalse(Constants.PrekXXX + getItem(
+            GetBknByCookie::class.java).path)
+
         val items = ArrayList<String>()
         if (qqPacketHelper) {
             items.add("QQPacketHelper")
@@ -132,6 +142,12 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
         }
         if (qqMessageTracker) {
             items.add("已读追踪")
+        }
+        if (getCookie) {
+            items.add("GetCookie")
+        }
+        if (getBknByCookie) {
+            items.add("GetBknByCookie")
         }
 
         if (getItem(QQHookCodec::class.java).isEnabled) {
@@ -186,7 +202,52 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
                             ).path, false
                         )
                     }
+                    "GetCookie" -> {
+                        SyncUtils.runOnUiThread {
+                            val builder = MaterialAlertDialogBuilder(
+                                CommonContextWrapper.createAppCompatContext(view.context)
+                            )
 
+                            builder.setTitle("请输入域名")
+
+                            val domain =
+                                EditText(CommonContextWrapper.createAppCompatContext(view.context))
+                            domain.setHint("请输入域名")
+                            domain.setText("qzone.qq.com")
+
+                            builder.setView(domain)
+
+                            builder.setNegativeButton("取消") { dialog, i ->
+                                dialog.dismiss()
+                            }
+                            builder.setPositiveButton("确定") { dialog, i ->
+                                GetCookie.getCookie(view.context, domain.text.toString())
+                            }
+
+                            builder.show()
+                        }
+                    }
+                    "GetBknByCookie" -> {
+                        SyncUtils.runOnUiThread {
+                            val builder = MaterialAlertDialogBuilder(CommonContextWrapper.createAppCompatContext(view.context))
+
+                            builder.setTitle("请输入 Cookie")
+
+                            val cookie = EditText(CommonContextWrapper.createAppCompatContext(view.context))
+                            cookie.setHint("请输入 Cookie")
+
+                            builder.setView(cookie)
+
+                            builder.setNegativeButton("取消") { dialog, i ->
+                                dialog.dismiss()
+                            }
+                            builder.setPositiveButton("确定") { dialog, i ->
+                                GetBknByCookie.getBkn(CommonContextWrapper.createAppCompatContext(view.context), cookie.text.toString())
+                            }
+
+                            builder.show()
+                        }
+                    }
                 }
             }
             .show()
