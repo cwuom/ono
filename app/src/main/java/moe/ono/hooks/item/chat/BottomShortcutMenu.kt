@@ -14,6 +14,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
 import de.robv.android.xposed.XposedHelpers
 import moe.ono.R
+import moe.ono.bridge.ntapi.ChatTypeConstants
 import moe.ono.config.CacheConfig
 import moe.ono.config.ConfigManager
 import moe.ono.constants.Constants
@@ -35,6 +36,7 @@ import moe.ono.reflex.XMethod
 import moe.ono.ui.CommonContextWrapper
 import moe.ono.util.Initiator
 import moe.ono.util.Logger
+import moe.ono.util.Session
 import moe.ono.util.SyncUtils
 
 @SuppressLint("DiscouragedApi")
@@ -55,6 +57,10 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
             ).ignoreParam().get()
 
             hookAfter(method) { param: MethodHookParam ->
+                if (Session.getContact().chatType != ChatTypeConstants.C2C && Session.getContact().chatType != ChatTypeConstants.GROUP) {
+                    return@hookAfter
+                }
+
                 val imageView = param.result as ImageView
                 if ("拍照".contentEquals(imageView.contentDescription)) {
                     imageView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
