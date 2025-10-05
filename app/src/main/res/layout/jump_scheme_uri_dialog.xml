@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<moe.ono.ui.view.RadiusCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    android:id="@+id/pb_sender_root_cardview"
+    app:rcv_topLeftRadiu="20dp"
+    app:rcv_topRightRadiu="20dp"
+    app:cardBackgroundColor="@color/card_bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/card_bg"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/jump_scheme_uri"
+            android:textColor="@color/firstTextColor"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="3"
+            android:padding="10dp">
+
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_jump"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="跳转"
+                android:layout_weight="1"
+                android:textStyle="bold"
+                app:cornerRadius="25dp"
+                android:drawableLeft="@drawable/ic_send"
+                android:drawableTint="@color/white"
+                android:backgroundTint="#0091EA"
+                android:textColor="@color/white"
+                />
+
+
+
+
+        </LinearLayout>
+
+        <View
+            android:id="@+id/view_cut"
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_marginTop="10dp"
+            />
+
+
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="5dp">
+
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="8dp"
+                    android:backgroundTint="@color/mask_bg"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp">
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="10dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                            <EditText
+                                android:id="@+id/scheme_uri"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@null"
+                                android:hint="Scheme 链接 (必填)"
+                                android:visibility="gone" />
+
+                        </LinearLayout>
+
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
+
+
+        </ScrollView>
+    </LinearLayout>
+
+</moe.ono.ui.view.RadiusCardView>

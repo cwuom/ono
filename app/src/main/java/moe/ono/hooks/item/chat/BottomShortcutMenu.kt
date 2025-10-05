@@ -20,6 +20,7 @@ import moe.ono.config.ConfigManager
 import moe.ono.constants.Constants
 import moe.ono.creator.FakeFileSender
 import moe.ono.creator.GetChannelArkDialog
+import moe.ono.creator.JumpSchemeUriDialog
 import moe.ono.creator.PacketHelperDialog
 import moe.ono.creator.QQMessageTrackerDialog
 import moe.ono.hooks.XHook
@@ -29,6 +30,7 @@ import moe.ono.hooks._core.factory.HookItemFactory.getItem
 import moe.ono.hooks.base.util.Toasts
 import moe.ono.hooks.item.developer.GetBknByCookie
 import moe.ono.hooks.item.developer.GetCookie
+import moe.ono.hooks.item.developer.JumpSchemeUri
 import moe.ono.hooks.item.developer.QQHookCodec
 import moe.ono.hooks.item.developer.QQPacketHelperEntry
 import moe.ono.hooks.item.sigma.QQMessageTracker
@@ -143,6 +145,9 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
         val getChannelArk = ConfigManager.getDefaultConfig().getBooleanOrFalse(Constants.PrekXXX + getItem(
             GetChannelArk::class.java).path)
 
+        val jumpSchemeUri = ConfigManager.getDefaultConfig().getBooleanOrFalse(Constants.PrekXXX + getItem(
+            JumpSchemeUri::class.java).path)
+
         val items = ArrayList<String>()
         if (qqPacketHelper) {
             items.add("QQPacketHelper")
@@ -161,6 +166,9 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
         }
         if (getChannelArk) {
             items.add("GetChannelArk")
+        }
+        if (jumpSchemeUri) {
+            items.add("打开 Scheme 链接")
         }
 
         if (getItem(QQHookCodec::class.java).isEnabled) {
@@ -263,6 +271,9 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
                     }
                     "GetChannelArk" -> {
                         SyncUtils.runOnUiThread { GetChannelArkDialog.createView(view.context) }
+                    }
+                    "打开 Scheme 链接" -> {
+                        SyncUtils.runOnUiThread { JumpSchemeUriDialog.createView(view.context) }
                     }
                 }
             }

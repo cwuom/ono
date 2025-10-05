@@ -13,4 +13,5 @@
     <string name="title_activity_ouosetting_step2">OUOSettingActivityStep2</string>
     <string name="qq_message_tracker">Message Tracker</string>
     <string name="get_channel_ark">Get Channel Ark</string>
+    <string name="jump_scheme_uri">Jump Scheme Uri</string>
 </resources>
