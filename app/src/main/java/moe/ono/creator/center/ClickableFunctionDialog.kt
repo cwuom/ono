@@ -646,9 +646,6 @@ object ClickableFunctionDialog {
 
         builder.setView(layout)
 
-        val warningText = TextView(context)
-        layout.addView(warningText)
-
         builder.setNegativeButton(
             "关闭"
         ) { dialog: DialogInterface, _: Int -> dialog.cancel() }
