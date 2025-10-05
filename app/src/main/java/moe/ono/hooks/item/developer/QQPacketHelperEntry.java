@@ -21,7 +21,7 @@ import moe.ono.util.Logger;
 @SuppressLint("DiscouragedApi")
 @HookItem(
         path = "开发者选项/QQPacketHelper",
-        description = "* 此功能极度危险，滥用可能会导致您的账号被冻结；为了您的人身安全，请勿发送恶意代码\n\n开启后需在聊天界面长按加号呼出，或长按发送按钮呼出"
+        description = "* 此功能极度危险，滥用可能会导致您的账号被冻结；为了您的人身安全，请勿发送恶意代码\n\n开启后需在聊天界面长按加号呼出 (可关闭)，或长按发送按钮呼出"
 )
 public class QQPacketHelperEntry extends BaseClickableFunctionHookItem {
     private void hook() {
