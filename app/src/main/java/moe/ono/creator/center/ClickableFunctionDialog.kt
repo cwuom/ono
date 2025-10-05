@@ -30,6 +30,7 @@ import moe.ono.hooks._core.factory.HookItemFactory
 import moe.ono.hooks.base.util.Toasts
 import moe.ono.hooks.item.chat.QQBubbleRedirect
 import moe.ono.hooks.item.chat.StickerPanelEntry
+import moe.ono.hooks.item.developer.QQPacketHelperEntry
 import moe.ono.hooks.item.sigma.QQMessageTracker
 import moe.ono.hooks.item.sigma.QQSurnamePredictor
 import moe.ono.util.Logger
@@ -676,6 +677,57 @@ object ClickableFunctionDialog {
             dialog.dismiss()
         }
 
+
+        builder.show()
+    }
+
+    fun showCFGDialogQQPacketHelperEntry(item: BaseClickableFunctionHookItem, context: Context?) {
+        if (context == null) return
+        val builder = MaterialAlertDialogBuilder(context)
+        builder.setTitle("QQPacketHelper")
+
+        val layout = LinearLayout(context)
+        layout.orientation = LinearLayout.VERTICAL
+        layout.setPadding(16, 16, 16, 16)
+
+        val checkBox = MaterialCheckBox(context)
+        checkBox.text = "启用"
+
+        val hookPanelCheckBox = MaterialCheckBox(context)
+        hookPanelCheckBox.text = "覆盖加号菜单"
+
+        layout.addView(checkBox)
+        layout.addView(hookPanelCheckBox)
+
+        builder.setView(layout)
+
+        val warningText = TextView(context)
+        warningText.text = "开启后长按加号按钮调出 QQPacketHelper\n* 开关需重启生效"
+        layout.addView(warningText)
+
+        builder.setPositiveButton(
+            "确定"
+        ) { dialog: DialogInterface, _: Int -> dialog.cancel() }
+
+        checkBox.isChecked = item.isEnabled
+
+        checkBox.setOnCheckedChangeListener { buttonView: CompoundButton?, isChecked: Boolean ->
+            ConfigManager.dPutBoolean(
+                Constants.PrekClickableXXX + HookItemFactory.getItem(
+                    QQPacketHelperEntry::class.java
+                ).path, isChecked
+            )
+            item.isEnabled = isChecked
+            if (isChecked) {
+                item.startLoad()
+            }
+        }
+
+        hookPanelCheckBox.isChecked = ConfigManager.dGetBooleanDefTrue(Constants.PrekCfgXXX + "QQPacketHelperHookPanel")
+
+        hookPanelCheckBox.setOnCheckedChangeListener { view, isCheck ->
+            ConfigManager.dPutBoolean(Constants.PrekCfgXXX + "QQPacketHelperHookPanel", isCheck)
+        }
 
         builder.show()
     }

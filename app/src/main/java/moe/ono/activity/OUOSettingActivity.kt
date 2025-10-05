@@ -58,10 +58,12 @@ import java.lang.Integer.max
 import androidx.core.graphics.drawable.toDrawable
 import moe.ono.creator.center.ClickableFunctionDialog.showCFGDialogMessageEncryptor
 import moe.ono.creator.center.ClickableFunctionDialog.showCFGDialogQQBubbleRedirect
+import moe.ono.creator.center.ClickableFunctionDialog.showCFGDialogQQPacketHelperEntry
 import moe.ono.creator.center.ClickableFunctionDialog.showCFGDialogSelfMessageReactor
 import moe.ono.hooks.item.chat.MessageEncryptor
 import moe.ono.hooks.item.chat.QQBubbleRedirect
 import moe.ono.hooks.item.chat.SelfMessageReactor
+import moe.ono.hooks.item.developer.QQPacketHelperEntry
 
 open class OUOSettingActivity : BaseActivity() {
     private var mAppBarLayoutHeight: Int = 0
@@ -435,6 +437,9 @@ open class OUOSettingActivity : BaseActivity() {
                     }
                     getItem(QQBubbleRedirect::class.java).path -> {
                         showCFGDialogQQBubbleRedirect(item, requireContext())
+                    }
+                    getItem(QQPacketHelperEntry::class.java).path -> {
+                        showCFGDialogQQPacketHelperEntry(item, requireContext())
                     }
                 }
             }

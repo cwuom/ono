@@ -118,7 +118,7 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
         val sendFakeFile =
             ConfigManager.getDefaultConfig().getBooleanOrFalse(Constants.PrekSendFakeFile)
         val qqPacketHelper = ConfigManager.getDefaultConfig().getBooleanOrFalse(
-            Constants.PrekXXX + getItem(
+            Constants.PrekClickableXXX + getItem(
                 QQPacketHelperEntry::class.java
             ).path
         )
