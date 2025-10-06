@@ -3,9 +3,6 @@ package moe.ono.hooks.item.profile
 import OidbSvcTrpcTcp0Xfe12
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -20,7 +17,6 @@ import io.noties.markwon.Markwon
 import moe.ono.hooks._base.BaseSwitchFunctionHookItem
 import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.hooks.base.util.Toasts
-import moe.ono.hooks.base.util.Toasts.TYPE_INFO
 import moe.ono.service.QQInterfaces.Companion.receive
 import moe.ono.service.QQInterfaces.Companion.sendOidbSvcTrpcTcp
 import moe.ono.ui.CommonContextWrapper
