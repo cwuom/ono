@@ -26,7 +26,6 @@ import com.lxj.xpopup.core.BasePopupView;
 import com.lxj.xpopup.core.BottomPopupView;
 import com.lxj.xpopup.util.XPopupUtils;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -38,6 +37,7 @@ import moe.ono.hooks.base.util.Toasts;
 import moe.ono.hooks.item.developer.GetCookie;
 import moe.ono.ui.CommonContextWrapper;
 import moe.ono.util.AppRuntimeHelper;
+import moe.ono.util.ContextUtils;
 import moe.ono.util.Logger;
 import moe.ono.util.Session;
 import moe.ono.util.SyncUtils;
@@ -154,24 +154,20 @@ public class GetChannelArkDialog extends BottomPopupView {
                                 String result = response.body().string();
 
                                 SyncUtils.runOnUiThread(() -> {
-                                    JSONObject json = null;
                                     try {
-                                        json = new JSONObject(result);
-                                    } catch (JSONException e) {
-                                        Toasts.error(v.getContext(), "JSON 解析失败");
-                                    }
-                                    assert json != null;
-                                    String base64 = Objects.requireNonNull(json.optJSONObject("data")).optString("signed_ark");
-                                    byte[] decodedBytes = Base64.getDecoder().decode(base64);
-                                    String ark = new String(decodedBytes);
-                                    try {
+                                        JSONObject json = new JSONObject(result);
+                                        String base64 = Objects.requireNonNull(json.optJSONObject("data")).optString("signed_ark");
+                                        byte[] decodedBytes = Base64.getDecoder().decode(base64);
+                                        String ark = new String(decodedBytes);
                                         PacketHelperDialog.send_ark_msg(ark, Session.getContact());
-                                    } catch (JSONException e) {
-                                        Toasts.error(v.getContext(), "发送失败");
+                                    } catch (Exception e) {
+                                        Logger.e(e);
+                                        Toasts.error(ContextUtils.getCurrentActivity(), "发生错误, 请检查参数是否完整");
                                     }
                                 });
                             } catch (Exception e) {
                                 Logger.e(e);
+                                Toasts.error(ContextUtils.getCurrentActivity(), "发生错误, 请检查参数是否完整");
                             }
                         }
                     });
