@@ -62,6 +62,14 @@
                 />
 
             <RadioButton
+                android:id="@+id/rb_xml"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="xml"
+                android:textSize="15sp"
+                />
+
+            <RadioButton
                 android:id="@+id/rb_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

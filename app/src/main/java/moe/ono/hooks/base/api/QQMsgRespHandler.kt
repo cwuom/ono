@@ -6,7 +6,6 @@ import com.tencent.qqnt.kernel.nativeinterface.PushExtraInfo
 import de.robv.android.xposed.XposedHelpers.callMethod
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
-import kotlinx.serialization.json.*
 import moe.ono.R
 import moe.ono.bridge.ntapi.RelationNTUinAndUidApi.getUinFromUid
 import moe.ono.common.CheckUtils
@@ -46,8 +45,6 @@ import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.util.UUID
 import java.util.zip.Deflater
-import kotlin.random.Random
-import kotlin.random.nextUInt
 
 @HookItem(path = "API/QQMsgRespHandler")
 class QQMsgRespHandler : ApiHookItem() {
@@ -445,25 +442,27 @@ class QQMsgRespHandler : ApiHookItem() {
 
     }
 
-    private fun compressData(data: String): ByteArray {
-        val inputBytes = data.toByteArray(Charsets.UTF_8)
-        val deflater = Deflater(Deflater.DEFAULT_COMPRESSION, false)
-        deflater.setInput(inputBytes)
-        deflater.finish()
+    companion object {
+        fun compressData(data: String): ByteArray {
+            val inputBytes = data.toByteArray(Charsets.UTF_8)
+            val deflater = Deflater(Deflater.DEFAULT_COMPRESSION, false)
+            deflater.setInput(inputBytes)
+            deflater.finish()
 
-        val outputStream = ByteArrayOutputStream()
-        val buffer = ByteArray(1024)
-        while (!deflater.finished()) {
-            val count = deflater.deflate(buffer)
-            outputStream.write(buffer, 0, count)
+            val outputStream = ByteArrayOutputStream()
+            val buffer = ByteArray(1024)
+            while (!deflater.finished()) {
+                val count = deflater.deflate(buffer)
+                outputStream.write(buffer, 0, count)
+            }
+            deflater.end()
+            val compressedBytes = outputStream.toByteArray()
+            val result = ByteArray(compressedBytes.size + 1)
+            result[0] = 0x01
+            System.arraycopy(compressedBytes, 0, result, 1, compressedBytes.size)
+
+            return result
         }
-        deflater.end()
-        val compressedBytes = outputStream.toByteArray()
-        val result = ByteArray(compressedBytes.size + 1)
-        result[0] = 0x01
-        System.arraycopy(compressedBytes, 0, result, 1, compressedBytes.size)
-
-        return result
     }
 
     fun appendToContentArray(original: JSONObject, newContent: Any) {

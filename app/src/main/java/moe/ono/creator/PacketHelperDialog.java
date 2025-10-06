@@ -88,6 +88,7 @@ import java.util.zip.GZIPOutputStream;
 import moe.ono.R;
 import moe.ono.bridge.Nt_kernel_bridge;
 import moe.ono.bridge.kernelcompat.ContactCompat;
+import moe.ono.hooks.base.api.QQMsgRespHandler;
 import moe.ono.hooks.protocol.QPacketHelperKt;
 import moe.ono.hooks.base.util.Toasts;
 import moe.ono.util.AppRuntimeHelper;
@@ -95,6 +96,7 @@ import moe.ono.ui.CommonContextWrapper;
 import moe.ono.util.Logger;
 import moe.ono.util.SafUtils;
 import moe.ono.util.SyncUtils;
+import moe.ono.util.Utils;
 
 @SuppressLint({"ResourceType", "StaticFieldLeak"})
 public class PacketHelperDialog extends BottomPopupView {
@@ -260,6 +262,11 @@ public class PacketHelperDialog extends BottomPopupView {
                         mRgSendBy.setVisibility(GONE);
                         forwardConfig.setVisibility(GONE);
                         break;
+                    case "xml":
+                        editText.setHint("Xml...");
+                        mRgSendBy.setVisibility(GONE);
+                        forwardConfig.setVisibility(GONE);
+                        break;
                     case "text":
                         editText.setHint("纯文本...");
                         mRgSendBy.setVisibility(GONE);
@@ -299,6 +306,21 @@ public class PacketHelperDialog extends BottomPopupView {
                     return;
                 } else if (send_type.equals("text")){
                     send_text_msg(text, contactCompat);
+                    return;
+                } else if (send_type.equals("xml")) {
+                    try {
+                        String hex = Utils.bytesToHex(QQMsgRespHandler.Companion.compressData(text));
+                        String pb = "{\n" +
+                                "    \"12\": {\n" +
+                                "        \"1\": \"hex->"+hex+"\",\n" +
+                                "        \"2\": 35\n" +
+                                "    }\n" +
+                                "}";
+                        setContentForLongmsg(pb);
+                    } catch (Exception e) {
+                        Toasts.error(getContext(), "发生错误");
+                        Logger.e(e);
+                    }
                     return;
                 }
 
