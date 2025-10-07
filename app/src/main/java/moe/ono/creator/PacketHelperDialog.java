@@ -66,6 +66,8 @@ import com.tencent.qqnt.kernel.nativeinterface.MsgElement;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -212,9 +214,21 @@ public class PacketHelperDialog extends BottomPopupView {
                     try {
                         new JSONArray(preContent);
                     } catch (JSONException ex) {
-                        editText.setHint("纯文本...");
-                        mRgSendType.check(R.id.rb_text);
-                        mRgSendBy.setVisibility(GONE);
+                        try {
+                            XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+                            factory.setNamespaceAware(true);
+                            XmlPullParser parser = factory.newPullParser();
+                            parser.setInput(new java.io.StringReader(preContent));
+                            while (parser.next() != XmlPullParser.END_DOCUMENT) {
+                            }
+                            editText.setHint("Xml...");
+                            mRgSendType.check(R.id.rb_xml);
+                            mRgSendBy.setVisibility(GONE);
+                        } catch (Exception er) {
+                            editText.setHint("纯文本...");
+                            mRgSendType.check(R.id.rb_text);
+                            mRgSendBy.setVisibility(GONE);
+                        }
                     }
                 }
             }
