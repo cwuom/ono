@@ -64,6 +64,7 @@ import moe.ono.hooks.item.chat.MessageEncryptor
 import moe.ono.hooks.item.chat.QQBubbleRedirect
 import moe.ono.hooks.item.chat.SelfMessageReactor
 import moe.ono.hooks.item.developer.QQPacketHelperEntry
+import moe.ono.hooks.item.entertainment.FuckSport
 
 open class OUOSettingActivity : BaseActivity() {
     private var mAppBarLayoutHeight: Int = 0
@@ -440,6 +441,9 @@ open class OUOSettingActivity : BaseActivity() {
                     }
                     getItem(QQPacketHelperEntry::class.java).path -> {
                         showCFGDialogQQPacketHelperEntry(item, requireContext())
+                    }
+                    getItem(FuckSport::class.java).path -> {
+                        FuckSport.showDialog(requireContext())
                     }
                 }
             }
