@@ -35,6 +35,16 @@ class QQBubbleRedirect : BaseClickableFunctionHookItem() {
                 }
             }
 
+        } catch (t: NoSuchMethodError) {
+            val mI: Method = findMethodExact("com.tencent.mobileqq.bubble.BubbleManager".clazz,
+                "J", String::class.java)
+
+            hookBefore(mI) {
+                val cacheFile = File(CACHE_FILE)
+                if (cacheFile.exists()) {
+                    it.args[0] = CACHE_FILE
+                }
+            }
         } catch (t: Throwable) {
             Logger.e("QQBubbleRedirect", t)
         }

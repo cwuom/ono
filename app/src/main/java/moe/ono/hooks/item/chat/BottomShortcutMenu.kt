@@ -44,7 +44,7 @@ import moe.ono.util.SyncUtils
 @SuppressLint("DiscouragedApi")
 @HookItem(
     path = "聊天与消息/快捷菜单",
-    description = "点击聊天页面下方 ONO 图标调出快捷菜单，部分功能依赖此选项，推荐开启"
+    description = "点击聊天页面下方 ONO 图标调出快捷菜单，部分功能依赖此选项，推荐开启\n* 重启生效"
 )
 class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
     private val classNames: List<String> = mutableListOf(

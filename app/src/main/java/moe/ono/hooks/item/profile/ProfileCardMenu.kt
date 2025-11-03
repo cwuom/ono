@@ -92,7 +92,7 @@ class ProfileCardMenu : BaseSwitchFunctionHookItem() {
                 .hasShadowBg(false)
                 .atView(v)
                 .asAttachList(
-                    arrayOf("查看等级", "尝试获取详细信息"),
+                    arrayOf("查看等级", "尝试获取详细信息", "查找共同群"),
                     intArrayOf(),
                     object : OnSelectListener {
                         override fun onSelect(position: Int, t: String) {
@@ -195,6 +195,14 @@ class ProfileCardMenu : BaseSwitchFunctionHookItem() {
                                         }
 
                                     }.start()
+                                }
+
+                                2 -> {
+                                    Utils.jump(
+                                        v,
+                                        this.hashCode(),
+                                        "https://ti.qq.com/friends/recall?uin=$QQ"
+                                    )
                                 }
                             }
                         }
