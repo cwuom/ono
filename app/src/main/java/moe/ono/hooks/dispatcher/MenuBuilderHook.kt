@@ -105,7 +105,8 @@ interface OnMenuBuilder {
             "com.tencent.mobileqq.aio.msglist.holder.component.LocationShare.AIOLocationShareComponent",  // 位置共享
             "com.tencent.mobileqq.aio.qwallet.AIOQWalletComponent",                                       // 红包转账
             "com.tencent.mobileqq.aio.shop.AIOShopArkContentComponent",                                   // 商城 Ark 卡片
-            "com.tencent.qqnt.aio.sample.BusinessSampleContentComponent"                                  // 业务示例
+            "com.tencent.qqnt.aio.sample.BusinessSampleContentComponent",                                 // 业务示例
+            "com.tencent.mobileqq.aio.msglist.holder.component.template.AIOTemplateMsgComponent"          // 新版本合并转发
         )
 
     fun onGetMenu(
