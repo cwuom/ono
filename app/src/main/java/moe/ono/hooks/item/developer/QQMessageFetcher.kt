@@ -25,6 +25,18 @@ import moe.ono.util.SyncUtils
 @SuppressLint("DiscouragedApi")
 @HookItem(path = "开发者选项/Element(s) 反序列化", description = "长按消息点击“拉取”进行反序列化操作")
 class QQMessageFetcher : BaseSwitchFunctionHookItem(), OnMenuBuilder {
+
+    companion object {
+        fun pullGroupMsg(msgRecord: MsgRecord){
+            val seq = msgRecord.msgSeq
+            sendPacket("MessageSvc.PbGetGroupMsg", """{"1": ${msgRecord.peerUid}, "2": ${seq}, "3": ${seq}, "6": 0}""")
+        }
+
+        fun pullC2CMsg(msgRecord: MsgRecord){
+            sendPacket("MessageSvc.PbGetOneDayRoamMsg", """{"1": ${msgRecord.peerUin}, "2": ${msgRecord.msgTime}, "3": 0, "4": 1}""")
+        }
+    }
+
     override fun entry(classLoader: ClassLoader) {}
 
     override fun onGetMenu(aioMsgItem: Any, targetType: String, param: MethodHookParam) {
@@ -60,12 +72,17 @@ class QQMessageFetcher : BaseSwitchFunctionHookItem(), OnMenuBuilder {
                                         pullC2CMsg(msgRecord)
                                         setMsgRecord(msgRecord)
                                     }
+
                                     GROUP -> {
                                         pullGroupMsg(msgRecord)
                                         setMsgRecord(msgRecord)
                                     }
+
                                     else -> {
-                                        Toasts.info(ContextUtils.getCurrentActivity(), "不支持的聊天类型")
+                                        Toasts.info(
+                                            ContextUtils.getCurrentActivity(),
+                                            "不支持的聊天类型"
+                                        )
                                     }
                                 }
 
@@ -78,16 +95,5 @@ class QQMessageFetcher : BaseSwitchFunctionHookItem(), OnMenuBuilder {
             Unit
         }
         param.result = listOf(item) + param.result as List<*>
-    }
-
-    companion object {
-        fun pullGroupMsg(msgRecord: MsgRecord){
-            val seq = msgRecord.msgSeq
-            sendPacket("MessageSvc.PbGetGroupMsg", """{"1": ${msgRecord.peerUid}, "2": ${seq}, "3": ${seq}, "6": 0}""")
-        }
-    }
-
-    private fun pullC2CMsg(msgRecord: MsgRecord){
-        sendPacket("MessageSvc.PbGetOneDayRoamMsg", """{"1": ${msgRecord.peerUin}, "2": ${msgRecord.msgTime}, "3": 0, "4": 1}""")
     }
 }

@@ -24,6 +24,7 @@ import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.hooks._core.factory.HookItemFactory.getItem
 import moe.ono.hooks.base.util.Toasts
 import moe.ono.hooks.item.chat.MessageEncryptor
+import moe.ono.hooks.item.chat.FakeFileRecall
 import moe.ono.hooks.item.developer.QQPacketHelperC2CDisplayFixer
 import moe.ono.hooks.item.entertainment.ModifyTextMessage
 import moe.ono.hooks.protocol.buildMessage
@@ -346,6 +347,20 @@ class QQMsgRespHandler : ApiHookItem() {
                 "MessageSvc.PbGetOneDayRoamMsg" -> {
                     Logger.d("on MessageSvc.PbGetOneDayRoamMsg")
 
+                    if (FakeFileRecall.isProtocolRecall) {
+                        FakeFileRecall.isProtocolRecall = false
+                        val unknownId = obj.optJSONObject("6")?.optJSONObject("1")?.optString("7")
+                        if (unknownId != null) {
+                            FakeFileRecall.unknownId = unknownId
+                            FakeFileRecall.recallC2CMsg(FakeFileRecall.mPeerId,
+                                FakeFileRecall.mMsgRandom,
+                                FakeFileRecall.mMsgTime,
+                                FakeFileRecall.mMsgSeq,
+                                FakeFileRecall.mClientSeq)
+                        }
+                        return@hookBefore
+                    }
+
                     Logger.d("obj: " + obj.toString(4))
                     SyncUtils.runOnUiThread { QQMessageFetcherResultDialog.createView(
                         CommonContextWrapper.createAppCompatContext(ContextUtils.getCurrentActivity()), obj) }
@@ -374,6 +389,7 @@ class QQMsgRespHandler : ApiHookItem() {
                                     "}"
 
                             PacketHelperDialog.setContent(content, true)
+
                         } else if (PacketHelperDialog.mRgSendBy.checkedRadioButtonId == R.id.rb_send_by_forwarding) {
                             if (!PacketHelperDialog.mRbXmlForward.isChecked) {
                                 val json = "{\n" +

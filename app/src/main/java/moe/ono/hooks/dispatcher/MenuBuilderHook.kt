@@ -4,6 +4,7 @@ import de.robv.android.xposed.XC_MethodHook
 import moe.ono.hooks._base.ApiHookItem
 import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.hooks.item.chat.MessageEncryptor
+import moe.ono.hooks.item.chat.FakeFileRecall
 import moe.ono.hooks.item.chat.StickerPanelEntry
 import moe.ono.hooks.item.developer.QQMessageFetcher
 import moe.ono.hooks.item.entertainment.ModifyTextMessage
@@ -21,6 +22,7 @@ class MenuBuilderHook : ApiHookItem() {
         ModifyTextMessage(),
         RespondFace(),
         MessageEncryptor(),
+        FakeFileRecall(),
     )
 
     override fun entry(classLoader: ClassLoader) {
@@ -105,8 +107,7 @@ interface OnMenuBuilder {
             "com.tencent.mobileqq.aio.msglist.holder.component.LocationShare.AIOLocationShareComponent",  // 位置共享
             "com.tencent.mobileqq.aio.qwallet.AIOQWalletComponent",                                       // 红包转账
             "com.tencent.mobileqq.aio.shop.AIOShopArkContentComponent",                                   // 商城 Ark 卡片
-            "com.tencent.qqnt.aio.sample.BusinessSampleContentComponent",                                 // 业务示例
-            "com.tencent.mobileqq.aio.msglist.holder.component.template.AIOTemplateMsgComponent"          // 新版本合并转发
+            "com.tencent.qqnt.aio.sample.BusinessSampleContentComponent"                                  // 业务示例
         )
 
     fun onGetMenu(
