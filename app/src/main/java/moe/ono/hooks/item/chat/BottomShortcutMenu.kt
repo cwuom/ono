@@ -5,10 +5,15 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
+import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputLayout
 import com.lxj.xpopup.XPopup
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
@@ -24,7 +29,7 @@ import moe.ono.creator.JumpSchemeUriDialog
 import moe.ono.creator.PacketHelperDialog
 import moe.ono.creator.QQMessageTrackerDialog
 import moe.ono.hooks.XHook
-import moe.ono.hooks._base.BaseSwitchFunctionHookItem
+import moe.ono.hooks._base.BaseClickableFunctionHookItem
 import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.hooks._core.factory.HookItemFactory.getItem
 import moe.ono.hooks.base.util.Toasts
@@ -44,9 +49,9 @@ import moe.ono.util.SyncUtils
 @SuppressLint("DiscouragedApi")
 @HookItem(
     path = "聊天与消息/快捷菜单",
-    description = "点击聊天页面下方 ONO 图标调出快捷菜单，部分功能依赖此选项，推荐开启\n* 重启生效"
+    description = "点击查看调出方式，部分功能依赖此选项，推荐开启\n* 重启生效"
 )
-class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
+class BottomShortcutMenu : BaseClickableFunctionHookItem() {
     private val classNames: List<String> = mutableListOf(
         "com.tencent.mobileqq.aio.msglist.holder.component.avatar.AIOAvatarContentComponent",
         "com.tencent.mobileqq.aio.msglist.holder.component.nick.block.MainNickNameBlock"
@@ -64,49 +69,60 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
                 }
 
                 val imageView = param.result as ImageView
-                if ("拍照".contentEquals(imageView.contentDescription)) {
-                    imageView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
-                        override fun onViewAttachedToWindow(v: View) {
-                            val parent = v.parent
-                            if (parent is ViewGroup) {
-                                Logger.d(parent::class.java.name)
 
-                                fun foundONO(view: ViewGroup) : Boolean {
-                                    for (i in 0 until view.childCount) {
-                                        val child = view.getChildAt(i)
-                                        if (child.contentDescription == "ONO") {
-                                            return true
+                if (!this.isEnabled) return@hookAfter
+                if (ConfigManager.dGetInt(Constants.PrekCfgXXX + "bottom_shortcut_menu_mode", 0) == 0) {
+                    if ("拍照".contentEquals(imageView.contentDescription)) {
+                        imageView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+                            override fun onViewAttachedToWindow(v: View) {
+                                val parent = v.parent
+                                if (parent is ViewGroup) {
+                                    Logger.d(parent::class.java.name)
+
+                                    fun foundONO(view: ViewGroup) : Boolean {
+                                        for (i in 0 until view.childCount) {
+                                            val child = view.getChildAt(i)
+                                            if (child.contentDescription == "ONO") {
+                                                return true
+                                            }
                                         }
-                                    }
-                                    return false
-                                }
-
-                                if (!foundONO(parent)) {
-                                    val onoImageView = ImageView(parent.context)
-                                    onoImageView.setImageResource(R.drawable.ic_ouo)
-                                    onoImageView.contentDescription = "ONO"
-
-                                    val layoutParams = LinearLayout.LayoutParams(0, (28.0f * parent.resources.displayMetrics.density + 0.5f).toInt())
-                                    layoutParams.weight = 1.0f
-                                    layoutParams.gravity = 16
-
-                                    onoImageView.layoutParams = layoutParams
-
-                                    onoImageView.setOnClickListener { view ->
-                                        val fixContext =
-                                            CommonContextWrapper.createAppCompatContext(imageView.context)
-                                        popMenu(fixContext, view)
-                                        true
+                                        return false
                                     }
 
-                                    parent.addView(onoImageView, 4)
+                                    if (!foundONO(parent)) {
+                                        val onoImageView = ImageView(parent.context)
+                                        onoImageView.setImageResource(R.drawable.ic_ouo)
+                                        onoImageView.contentDescription = "ONO"
+
+                                        val layoutParams = LinearLayout.LayoutParams(0, (28.0f * parent.resources.displayMetrics.density + 0.5f).toInt())
+                                        layoutParams.weight = 1.0f
+                                        layoutParams.gravity = 16
+
+                                        onoImageView.layoutParams = layoutParams
+
+                                        onoImageView.setOnClickListener { view ->
+                                            val fixContext =
+                                                CommonContextWrapper.createAppCompatContext(imageView.context)
+                                            popMenu(fixContext, view)
+                                        }
+
+                                        parent.addView(onoImageView, 4)
+                                    }
                                 }
                             }
-                        }
 
-                        override fun onViewDetachedFromWindow(v: View) {
+                            override fun onViewDetachedFromWindow(v: View) {
+                            }
+                        })
+                    }
+                } else {
+                    if ("红包".contentEquals(imageView.contentDescription)) {
+                        imageView.setOnLongClickListener { view ->
+                            val fixContext = CommonContextWrapper.createAppCompatContext(imageView.context)
+                            popMenu(fixContext, view)
+                            true
                         }
-                    })
+                    }
                 }
             }
 
@@ -396,5 +412,83 @@ class BottomShortcutMenu : BaseSwitchFunctionHookItem() {
         private var componentMethodName: String? = null
         private var componentMethodNameForMainNickNameBlock: String? = null
         private const val MAX_SIZE = 15
+
+        fun showCFGDialog(context: Context) {
+            val fixContext = CommonContextWrapper.createAppCompatContext(context)
+
+            val builder = MaterialAlertDialogBuilder(fixContext)
+            builder.setTitle("快捷菜单")
+
+            val layout = LinearLayout(fixContext).apply {
+                orientation = LinearLayout.VERTICAL
+                val pad = 32
+                setPadding(pad, pad, pad, pad)
+            }
+
+            val checkBox = MaterialCheckBox(fixContext).apply {
+                text = "启用"
+                isChecked = ConfigManager.dGetBoolean(
+                    Constants.PrekClickableXXX + getItem(BottomShortcutMenu::class.java).path
+                )
+                setOnCheckedChangeListener { _, p1 ->
+                    ConfigManager.dPutBoolean(
+                        Constants.PrekClickableXXX + getItem(BottomShortcutMenu::class.java).path,
+                        p1
+                    )
+                    getItem(BottomShortcutMenu::class.java).isEnabled = p1
+                    Toasts.success(fixContext, "重启生效")
+                }
+            }
+            layout.addView(checkBox)
+
+            val tips = listOf(
+                "点击聊天界面下方 ONO 图标调出菜单",
+                "长按聊天界面下方红包按钮调出菜单"
+            )
+            val currentIndex = ConfigManager.dGetInt(Constants.PrekCfgXXX + "bottom_shortcut_menu_mode", 0)
+
+            val tipsText = TextView(fixContext).apply {
+                text = tips[currentIndex]
+                textSize = 14f
+                setPadding(0, 16, 0, 0)
+            }
+            val dropdown = AutoCompleteTextView(fixContext).apply {
+                val options = listOf("增加 ONO 图标", "红包")
+                isFocusable = false
+                isCursorVisible = false
+                isLongClickable = false
+                keyListener = null
+                inputType = 0
+                setTextIsSelectable(false)
+                setCompoundDrawablesWithIntrinsicBounds(
+                    0, 0,
+                    com.google.android.material.R.drawable.mtrl_dropdown_arrow, 0
+                )
+                compoundDrawablePadding = 16
+                val adapter = ArrayAdapter(fixContext, android.R.layout.simple_list_item_1, options)
+                setAdapter(adapter)
+                setText(options[currentIndex], false)
+                setOnClickListener { showDropDown() }
+                setOnItemClickListener { _, _, position, _ ->
+                    ConfigManager.dPutInt(
+                        Constants.PrekCfgXXX + "bottom_shortcut_menu_mode",
+                        position
+                    )
+                    tipsText.text = tips[position]
+                }
+            }
+            val title = TextView(fixContext).apply {
+                text = "选择 Hook 模式"
+                textSize = 15f
+                setPadding(0, 24, 0, 8)
+            }
+            layout.addView(title)
+            layout.addView(dropdown)
+            layout.addView(tipsText)
+
+            builder.setView(layout)
+            builder.setPositiveButton("确定") { dialog, _ -> dialog.dismiss() }
+            builder.show()
+        }
     }
 }

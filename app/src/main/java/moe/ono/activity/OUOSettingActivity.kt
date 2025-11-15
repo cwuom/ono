@@ -60,6 +60,7 @@ import moe.ono.creator.center.ClickableFunctionDialog.showCFGDialogMessageEncryp
 import moe.ono.creator.center.ClickableFunctionDialog.showCFGDialogQQBubbleRedirect
 import moe.ono.creator.center.ClickableFunctionDialog.showCFGDialogQQPacketHelperEntry
 import moe.ono.creator.center.ClickableFunctionDialog.showCFGDialogSelfMessageReactor
+import moe.ono.hooks.item.chat.BottomShortcutMenu
 import moe.ono.hooks.item.chat.MessageEncryptor
 import moe.ono.hooks.item.chat.QQBubbleRedirect
 import moe.ono.hooks.item.chat.SelfMessageReactor
@@ -444,6 +445,9 @@ open class OUOSettingActivity : BaseActivity() {
                     }
                     getItem(FuckSport::class.java).path -> {
                         FuckSport.showDialog(requireContext())
+                    }
+                    getItem(BottomShortcutMenu::class.java).path -> {
+                        BottomShortcutMenu.showCFGDialog(requireContext())
                     }
                 }
             }
