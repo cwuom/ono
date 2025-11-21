@@ -12,7 +12,7 @@ import moe.ono.util.Initiator.load
 import moe.ono.util.Logger
 import moe.ono.util.SyncUtils
 
-@HookItem(path = "开发者选项/注入 CodecWarpper", description = "用于捕获请求，如 MessageSvc.PbSendMsg\n* 部分功能依赖此选项，重启生效\n* QQ 会检测这里，非必要不开启")
+@HookItem(path = "开发者选项/注入 CodecWarpper", description = "用于捕获请求，如 MessageSvc.PbSendMsg\n* 部分功能依赖此选项，重启生效\n* QQ 会检测这里，非必要不开启\n* 9.2.10 以上版本请勿开启，会导致 QQ 无法接收消息")
 class QQHookCodec : BaseSwitchFunctionHookItem() {
     override fun entry(classLoader: ClassLoader) {
         val configClass = load("com.tencent.freesia.UnitedConfig")
