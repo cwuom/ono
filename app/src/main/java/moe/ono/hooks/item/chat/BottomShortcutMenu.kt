@@ -39,6 +39,7 @@ import moe.ono.hooks.item.developer.JumpSchemeUri
 import moe.ono.hooks.item.developer.QQHookCodec
 import moe.ono.hooks.item.developer.QQPacketHelperEntry
 import moe.ono.hooks.item.sigma.QQMessageTracker
+import moe.ono.loader.hookapi.IShortcutMenu
 import moe.ono.reflex.XMethod
 import moe.ono.ui.CommonContextWrapper
 import moe.ono.util.Initiator
@@ -187,6 +188,12 @@ class BottomShortcutMenu : BaseClickableFunctionHookItem() {
             items.add("打开 Scheme 链接")
         }
 
+        menus.forEach { menu ->
+            if (menu.isAdd()) {
+                items.add(menu.menuName)
+            }
+        }
+
         if (getItem(QQHookCodec::class.java).isEnabled) {
             if (!messageEncryptor) {
                 items.add("开启加密抄送")
@@ -205,6 +212,13 @@ class BottomShortcutMenu : BaseClickableFunctionHookItem() {
                 items.toTypedArray<String>(),
                 intArrayOf()
             ) { _: Int, text: String? ->
+                menus.forEach { menu ->
+                    if (text == menu.menuName) {
+                        menu.clickHandle(view.context)
+                        return@asAttachList
+                    }
+                }
+
                 when (text) {
                     "QQPacketHelper" -> SyncUtils.runOnUiThread {
                         PacketHelperDialog.createView(
@@ -490,5 +504,6 @@ class BottomShortcutMenu : BaseClickableFunctionHookItem() {
             builder.setPositiveButton("确定") { dialog, _ -> dialog.dismiss() }
             builder.show()
         }
+        val menus = arrayListOf<IShortcutMenu>()
     }
 }
