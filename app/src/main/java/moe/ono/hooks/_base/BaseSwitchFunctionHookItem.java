@@ -1,8 +1,12 @@
 package moe.ono.hooks._base;
 
+import static moe.ono.hooks._core.factory.HookItemFactory.getItem;
+
 import android.view.View;
 
 import de.robv.android.xposed.XC_MethodHook;
+import moe.ono.config.ConfigManager;
+import moe.ono.constants.Constants;
 import moe.ono.util.SyncUtils;
 
 public abstract class BaseSwitchFunctionHookItem extends BaseHookItem {
@@ -40,6 +44,10 @@ public abstract class BaseSwitchFunctionHookItem extends BaseHookItem {
         if (isEnabled()) {
             super.tryExecute(param, hookAction);
         }
+    }
+
+    public boolean configIsEnable() {
+        return ConfigManager.getDefaultConfig().getBooleanOrFalse(Constants.PrekXXX+this.getPath());
     }
 
 }
