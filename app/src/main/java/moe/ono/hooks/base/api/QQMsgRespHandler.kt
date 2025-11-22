@@ -28,6 +28,8 @@ import moe.ono.hooks.item.chat.FakeFileRecall
 import moe.ono.hooks.item.developer.QQPacketHelperC2CDisplayFixer
 import moe.ono.hooks.item.entertainment.ModifyTextMessage
 import moe.ono.hooks.protocol.buildMessage
+import moe.ono.hooks.protocol.sendPacket
+import moe.ono.loader.hookapi.IRespHandler
 import moe.ono.reflex.XField
 import moe.ono.reflex.XMethod
 import moe.ono.service.QQInterfaces
@@ -56,14 +58,29 @@ class QQMsgRespHandler : ApiHookItem() {
             val fromServiceMsg: FromServiceMsg =
                 XField.obj(param.args[1]).name("fromServiceMsg").get()
 
-            val data = FunProtoData()
-            data.fromBytes(
-                getUnpPackage(
-                    fromServiceMsg.wupBuffer
+            var obj: JSONObject
+            try {
+                val data = FunProtoData()
+                data.fromBytes(
+                    getUnpPackage(
+                        fromServiceMsg.wupBuffer
+                    )
                 )
-            )
+                obj = data.toJSON()
+                handlers.forEach { handler ->
+                    if (handler.cmd == fromServiceMsg.serviceCmd) {
+                        handler.onHandle(obj, serviceMsg, fromServiceMsg)
+                    }
+                }
+            } catch (_: Exception) {
+                handlers.forEach { handler ->
+                    if (handler.cmd == fromServiceMsg.serviceCmd) {
+                        handler.onHandle(null, serviceMsg, fromServiceMsg)
+                    }
+                }
+                return@hookBefore
+            }
 
-            val obj: JSONObject = data.toJSON()
             when (fromServiceMsg.serviceCmd) {
                 "OidbSvcTrpcTcp.0x9067_202" -> {
                     Logger.d("on OidbSvcTrpcTcp.0x9067_202")
@@ -479,6 +496,8 @@ class QQMsgRespHandler : ApiHookItem() {
 
             return result
         }
+
+        val handlers = arrayListOf<IRespHandler>()
     }
 
     fun appendToContentArray(original: JSONObject, newContent: Any) {
