@@ -2,7 +2,6 @@ package moe.ono.util;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -20,6 +19,9 @@ import com.tencent.qqnt.kernel.nativeinterface.VASMsgFont;
 import com.tencent.qqnt.kernel.nativeinterface.VASMsgIceBreak;
 import com.tencent.qqnt.kernel.nativeinterface.VASMsgNamePlate;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -27,12 +29,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import de.robv.android.xposed.XposedBridge;
 
 public class Utils {
     private static Handler sHandler;
@@ -253,5 +252,46 @@ public class Utils {
             hexString.append(hex);
         }
         return hexString.toString();
+    }
+
+    public static Object deepGet(Object obj, String path, Object def) {
+        try {
+            String[] keys = path.split("\\.");
+
+            Object current = obj;
+
+            for (String key : keys) {
+
+                if (current == null) return def;
+
+                if (current instanceof JSONObject json) {
+
+                    if (json.has(key)) {
+                        current = json.opt(key);
+                        continue;
+                    }
+
+                    return def;
+                }
+
+                else if (current instanceof JSONArray arr) {
+
+                    if (!key.matches("\\d+")) return def;
+
+                    int index = Integer.parseInt(key);
+                    if (index < 0 || index >= arr.length()) return def;
+
+                    current = arr.opt(index);
+                }
+
+                else {
+                    return def;
+                }
+            }
+
+            return current != null ? current : def;
+        } catch (Exception e) {
+            return def;
+        }
     }
 }
