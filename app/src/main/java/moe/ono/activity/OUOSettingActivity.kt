@@ -449,6 +449,9 @@ open class OUOSettingActivity : BaseActivity() {
                     getItem(BottomShortcutMenu::class.java).path -> {
                         BottomShortcutMenu.showCFGDialog(requireContext())
                     }
+                    else -> {
+                        item.onClick(requireContext())
+                    }
                 }
             }
 

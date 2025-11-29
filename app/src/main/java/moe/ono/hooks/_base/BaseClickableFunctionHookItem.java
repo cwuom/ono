@@ -1,5 +1,7 @@
 package moe.ono.hooks._base;
 
+import android.content.Context;
+
 import de.robv.android.xposed.XC_MethodHook;
 import moe.ono.util.SyncUtils;
 
@@ -43,6 +45,9 @@ public abstract class BaseClickableFunctionHookItem extends BaseHookItem {
         if (isEnabled()) {
             super.tryExecute(param, hookAction);
         }
+    }
+
+    public void onClick(Context context) {
     }
 
 }
