@@ -14,6 +14,7 @@ public class FieldUtils extends BaseFinder<Field> {
 
     private Class<?> fieldType;
     private String fieldName;
+    private String fieldTypeName;
 
 
     public static Field getFieldByDesc(String desc) throws NoSuchMethodException {
@@ -93,6 +94,11 @@ public class FieldUtils extends BaseFinder<Field> {
         return this;
     }
 
+    public FieldUtils fieldTypeName(String fieldTypeName) {
+        this.fieldTypeName = fieldTypeName;
+        return this;
+    }
+
     @Override
     public FieldUtils find() {
         //查找缓存
@@ -109,6 +115,8 @@ public class FieldUtils extends BaseFinder<Field> {
         result.removeIf(field -> fieldType != null && !CheckClassType.checkType(field.getType(), fieldType));
         //过滤名称
         result.removeIf(field -> fieldName != null && !field.getName().equals(fieldName));
+        //模糊搜索
+        result.removeIf(field -> fieldTypeName != null && !field.getType().getName().contains(fieldTypeName));
         //写入缓存
         writeToFieldCache(result);
         return this;
