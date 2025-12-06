@@ -6,6 +6,7 @@ import static moe.ono.config.ConfigManager.cPutBoolean;
 import static moe.ono.config.ConfigManager.cPutString;
 import static moe.ono.constants.Constants.ClazzCacheKey_AbstractQQCustomMenuItem;
 import static moe.ono.constants.Constants.MethodCacheKey_AIOParam;
+import static moe.ono.constants.Constants.MethodCacheKey_ChatPanelBtn;
 import static moe.ono.constants.Constants.MethodCacheKey_InputRoot;
 import static moe.ono.constants.Constants.MethodCacheKey_MarkdownAIO;
 import static moe.ono.constants.Constants.MethodCacheKey_getBuddyName;
@@ -64,10 +65,12 @@ public class TargetManager {
             executor.execute((bridge, loader) -> {
                 // Methods
                 findAndCache(bridge, cl, MethodMatcher.create().usingStrings("rootVMBuild"), MethodCacheKey_AIOParam, out);
+                findAndCache(bridge, cl, MethodMatcher.create().usingStrings("findViewById(...)").usingStrings("inputRoot", "getContext(...)", "sendBtn", "binding"), MethodCacheKey_InputRoot, out);
                 findAndCache(bridge, cl, MethodMatcher.create().usingStrings("inputRoot.findViewById(R.id.send_btn)"), MethodCacheKey_InputRoot, out);
                 findAndCache(bridge, cl, MethodMatcher.create().usingStrings("AIOMarkdownContentComponent").usingStrings("bind status=").paramCount(2), MethodCacheKey_MarkdownAIO, out);
                 findAndCache(bridge, cl, MethodMatcher.create().usingStrings("getBuddyName()"), MethodCacheKey_getBuddyName, out);
                 findAndCache(bridge, cl, MethodMatcher.create().usingStrings("getDiscussionMemberShowName uin is null"), MethodCacheKey_getDiscussionMemberShowName, out);
+                findAndCache(bridge, cl, MethodMatcher.create().usingStrings("peerUid").usingStrings("panelCallback"), MethodCacheKey_ChatPanelBtn, out);
 
                 // Class
                 findAndCacheClass(bridge, cl,

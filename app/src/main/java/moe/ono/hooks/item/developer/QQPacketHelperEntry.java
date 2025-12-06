@@ -1,10 +1,14 @@
 package moe.ono.hooks.item.developer;
 
 import static moe.ono.constants.Constants.CLAZZ_PANEL_ICON_LINEAR_LAYOUT;
+import static moe.ono.constants.Constants.MethodCacheKey_ChatPanelBtn;
+import static moe.ono.dexkit.TargetManager.requireMethod;
 import static moe.ono.util.SyncUtils.runOnUiThread;
 
 import android.annotation.SuppressLint;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 
@@ -25,21 +29,23 @@ import moe.ono.util.Logger;
 )
 public class QQPacketHelperEntry extends BaseClickableFunctionHookItem {
     private void hook() {
-        try {
-            if (ConfigManager.dGetBooleanDefTrue(Constants.PrekCfgXXX + "QQPacketHelperHookPanel")) {
-                Method method = XMethod.clz(CLAZZ_PANEL_ICON_LINEAR_LAYOUT).ret(ImageView.class).ignoreParam().get();
-                hookAfter(method, param -> {
-                    ImageView imageView = (ImageView) param.getResult();
-                    if ("更多功能".contentEquals(imageView.getContentDescription())){
-                        imageView.setOnLongClickListener(view -> {
-                            runOnUiThread(() -> PacketHelperDialog.createView(null, view.getContext(), ""));
-                            return true;
-                        });
+        if (ConfigManager.dGetBooleanDefTrue(Constants.PrekCfgXXX + "QQPacketHelperHookPanel")) {
+            Method method = requireMethod(MethodCacheKey_ChatPanelBtn);
+            hookAfter(method, param -> {
+                LinearLayout layout = (LinearLayout) param.thisObject;
+                for (int i = 0; i < layout.getChildCount(); i++) {
+                    View child = layout.getChildAt(i);
+                    if (child instanceof ImageView && child.getContentDescription() != null) {
+                        ImageView panelIcon = (ImageView) child;
+                        if ("更多功能".contentEquals(panelIcon.getContentDescription())) {
+                            panelIcon.setOnLongClickListener(view -> {
+                                runOnUiThread(() -> PacketHelperDialog.createView(null, view.getContext(), ""));
+                                return true;
+                            });
+                        }
                     }
-                });
-            }
-        } catch (NoSuchMethodException e) {
-            Logger.e(this.getItemName(), e);
+                }
+            });
         }
     }
 
