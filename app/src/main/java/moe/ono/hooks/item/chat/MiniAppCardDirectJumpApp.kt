@@ -28,15 +28,18 @@ import org.json.JSONObject
 
 @HookItem(path = "聊天与消息/小程序卡直接跳转 APP", description = "在点击小程序卡后直接跳转对应的 APP 而不是小程序\n* 点击进行配置\n* 配置添加弹窗有一个哔哩哔哩预设")
 class MiniAppCardDirectJumpApp : BaseClickableFunctionHookItem() {
+    companion object var hooked = false
+
     override fun entry(classLoader: ClassLoader) {
         try {
             hookAllMethods(View::class.java, "setOnClickListener", object : XC_MethodHook() {
                 @Throws(Throwable::class)
                 override fun afterHookedMethod(param: MethodHookParam) {
+                    if (hooked) return
                     val listener = param.args[0] as View.OnClickListener? ?: return
 
                     val cls: Class<*> = listener.javaClass
-                    if (cls.name != "com.tencent.android.androidbypass.richui.viewdata.k") return
+                    if (!cls.name.contains("com.tencent.android.androidbypass.richui.viewdata.")) return
 
                     try {
                         val m = cls.getDeclaredMethod("onClick", View::class.java)
@@ -89,6 +92,7 @@ class MiniAppCardDirectJumpApp : BaseClickableFunctionHookItem() {
                                 }
                             }
                         })
+                        hooked = true
                     } catch (e: Throwable) {
                         Logger.e(e)
                     }
