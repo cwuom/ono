@@ -2,6 +2,7 @@ package moe.ono.hooks.base.api
 
 import android.text.TextUtils
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement
+import de.robv.android.xposed.XC_MethodHook
 import moe.ono.config.ONOConf
 import moe.ono.hooks._base.ApiHookItem
 import moe.ono.hooks._core.annotation.HookItem
@@ -17,6 +18,11 @@ class QQSendMsgListener : ApiHookItem() {
 
         hookBefore(sendMsgMethod) { param ->
             val elements = param.args[2] as ArrayList<MsgElement>
+
+            for (listener in listeners) {
+                listener(param, elements)
+            }
+
             if (ONOConf.getBoolean("global", "sticker_panel_set_ch_change_title", false)) {
                 val text: String =
                     ONOConf.getString("global", "sticker_panel_set_ed_change_title", "")
@@ -29,8 +35,10 @@ class QQSendMsgListener : ApiHookItem() {
                     }
                 }
             }
-
         }
+    }
 
+    companion object {
+        val listeners = mutableListOf<(param: XC_MethodHook.MethodHookParam, elems: ArrayList<MsgElement>) -> Unit>()
     }
 }
