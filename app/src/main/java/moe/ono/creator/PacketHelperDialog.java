@@ -12,6 +12,7 @@ import static moe.ono.util.Session.getContact;
 import static moe.ono.util.Session.getCurrentChatType;
 import static moe.ono.util.Session.getCurrentPeerID;
 
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
