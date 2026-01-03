@@ -399,16 +399,18 @@ public class PacketHelperDialog extends BottomPopupView {
                         String data = "{\"2\": {\n" +
                                 "  \"1\": \"MultiMsg\",\n" +
                                 "  \"2\": {\n" +
-                                "    \"1\": [\n" +
-                                "      {\n" +
+                                "    \"1\": [\n"
+                                
+                        for (JsonElement element : JsonParser.parseString(text).getAsJsonArray()) {
+                            data = data + "      {\n" +
                                 "        \"1\": {\n" +
-                                "          \"1\": "+etUin.getText()+",\n" +
+                                "          \"1\": "+element.getAsJsonArray().get(0).getAsString()+",\n" +
                                 "          \"5\": {},\n" +
                                 "          \"6\": {},\n" +
                                 "          \"7\": {},\n" +
                                 "          \"8\": {\n" +
                                 "            \"1\": 10001,\n" +
-                                "            \"4\": \"@ouom_pub\",\n" +
+                                "            \"4\": \"@mdyy\",\n" +
                                 "            \"5\": 2\n" +
                                 "          }\n" +
                                 "        },\n" +
@@ -416,9 +418,9 @@ public class PacketHelperDialog extends BottomPopupView {
                                 "          \"1\": 82,\n" +
                                 "          \"2\": {},\n" +
                                 "          \"3\": {},\n" +
-                                "          \"4\": "+ThreadLocalRandom.current().nextInt(0, 10000000)+",\n" +
+                                "          \"4\": "+System.currentTimeMillis()+",\n" +
                                 "          \"5\": "+ThreadLocalRandom.current().nextInt(0, 100000)+",\n" +
-                                "          \"6\": "+ThreadLocalRandom.current().nextInt(0, 10000000)+",\n" +
+                                "          \"6\": "+System.currentTimeMillis()+",\n" +
                                 "          \"7\": 1,\n" +
                                 "          \"8\": 0,\n" +
                                 "          \"9\": 0,\n" +
@@ -432,14 +434,14 @@ public class PacketHelperDialog extends BottomPopupView {
                                 "        },\n" +
                                 "        \"3\": {\n" +
                                 "          \"1\": {\n" +
-                                "            \"2\": " + text +
+                                "            \"2\": " + element.getAsJsonArray().get(1).getAsString() +
                                 "          }\n" +
                                 "        }\n" +
-                                "      }\n" +
-                                "    ]\n" +
+                                "      },\n" 
+                        }
+                        data = data.substring(0,data.length()-2)+"]\n" +
                                 "  }\n" +
                                 "}}\n".trim();
-
                         Logger.d("data", data);
                         byte[] protoBytes = QPacketHelperKt.buildMessage(data);
                         byte[] compressedData = compressData(protoBytes);
