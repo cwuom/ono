@@ -400,7 +400,7 @@ public class PacketHelperDialog extends BottomPopupView {
                         String data = "{\"2\": {\n" +
                                 "  \"1\": \"MultiMsg\",\n" +
                                 "  \"2\": {\n" +
-                                "    \"1\": [\n"
+                                "    \"1\": [\n";
                                 
                         for (JsonElement element : JsonParser.parseString(text).getAsJsonArray()) {
                             data = data + "      {\n" +
@@ -438,7 +438,7 @@ public class PacketHelperDialog extends BottomPopupView {
                                 "            \"2\": " + element.getAsJsonArray().get(1).getAsString() +
                                 "          }\n" +
                                 "        }\n" +
-                                "      },\n" 
+                                "      },\n" ;
                         }
                         data = data.substring(0,data.length()-2)+"]\n" +
                                 "  }\n" +
