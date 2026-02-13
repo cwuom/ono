@@ -35,14 +35,26 @@ class QQBubbleRedirect : BaseClickableFunctionHookItem() {
                 }
             }
 
-        } catch (t: NoSuchMethodError) {
-            val mI: Method = findMethodExact("com.tencent.mobileqq.bubble.BubbleManager".clazz,
-                "J", String::class.java)
+        } catch (_: NoSuchMethodError) {
+            try {
+                val mI: Method = findMethodExact("com.tencent.mobileqq.bubble.BubbleManager".clazz,
+                    "J", String::class.java)
 
-            hookBefore(mI) {
-                val cacheFile = File(CACHE_FILE)
-                if (cacheFile.exists()) {
-                    it.args[0] = CACHE_FILE
+                hookBefore(mI) {
+                    val cacheFile = File(CACHE_FILE)
+                    if (cacheFile.exists()) {
+                        it.args[0] = CACHE_FILE
+                    }
+                }
+            } catch (_: NoSuchMethodError) {
+                val mI: Method = findMethodExact("com.tencent.mobileqq.bubble.BubbleManager".clazz,
+                    "w", String::class.java)
+
+                hookBefore(mI) {
+                    val cacheFile = File(CACHE_FILE)
+                    if (cacheFile.exists()) {
+                        it.args[0] = CACHE_FILE
+                    }
                 }
             }
         } catch (t: Throwable) {
