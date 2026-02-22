@@ -108,7 +108,10 @@ interface OnMenuBuilder {
             "com.tencent.mobileqq.aio.qwallet.AIOQWalletComponent",                                       // 红包转账
             "com.tencent.mobileqq.aio.shop.AIOShopArkContentComponent",                                   // 商城 Ark 卡片
             "com.tencent.qqnt.aio.sample.BusinessSampleContentComponent",                                 // 业务示例
-            "com.tencent.mobileqq.aio.msglist.holder.component.template.AIOTemplateMsgComponent"          // 新版合并转发
+            "com.tencent.mobileqq.aio.msglist.holder.component.template.AIOTemplateMsgComponent",          // 新版合并转发
+            "com.tencent.mobileqq.aio.msglist.holder.component.troopdragonladder.TroopDragonLadderComponent",// 群接龙
+            "com.tencent.mobileqq.aio.msglist.holder.component.filtervideo.AIOLiveVideoContentComponent", // 泡泡消息
+            "com.tencent.mobileqq.aio.msglist.holder.component.aiaction.AIAvatarActionContentComponent",  // 超级 QQ 秀动作表情
         )
 
     fun onGetMenu(
