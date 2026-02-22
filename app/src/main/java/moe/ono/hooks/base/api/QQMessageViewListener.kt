@@ -53,22 +53,23 @@ class QQMessageViewListener : ApiHookItem() {
     }
 
     override fun entry(loader: ClassLoader) {
-        val onMsgViewUpdate =
-            MethodUtils.create("com.tencent.mobileqq.aio.msglist.holder.AIOBubbleMsgItemVB")
-                .returnType(Void.TYPE)
-                .params(Int::class.java, Ignore::class.java, List::class.java, Bundle::class.java)
-                .first()
-        hookAfter(onMsgViewUpdate) { param ->
-            val thisObject = param.thisObject
-            val msgView = FieldUtils.create(thisObject)
-                .fieldType(View::class.java)
-                .firstValue<View>(thisObject)
+        try {
+            val onMsgViewUpdate =
+                MethodUtils.create("com.tencent.mobileqq.aio.msglist.holder.AIOBubbleMsgItemVB").methodName("handleUIState").first()
+            hookAfter(onMsgViewUpdate) { param ->
+                val thisObject = param.thisObject
+                val msgView = FieldUtils.create(thisObject)
+                    .fieldType(View::class.java)
+                    .firstValue<View>(thisObject)
 
-            val aioMsgItem = FieldUtils.create(thisObject)
-                .fieldType(ClassUtils.findClass("com.tencent.mobileqq.aio.msg.AIOMsgItem"))
-                .firstValue<Any>(thisObject)
+                val aioMsgItem = FieldUtils.create(thisObject)
+                    .fieldType(ClassUtils.findClass("com.tencent.mobileqq.aio.msg.AIOMsgItem"))
+                    .firstValue<Any>(thisObject)
 
-            onViewUpdate(aioMsgItem, msgView)
+                onViewUpdate(aioMsgItem, msgView)
+            }
+        } catch (e: Exception) {
+            Logger.e(e)
         }
     }
 
