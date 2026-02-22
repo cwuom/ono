@@ -1,10 +1,8 @@
 package moe.ono.hooks.item.developer
 
-import moe.ono.config.CacheConfig
 import moe.ono.ext.EMPTY_BYTE_ARRAY
 import moe.ono.ext.beforeHook
 import moe.ono.ext.hookMethod
-import moe.ono.hooks._base.ApiHookItem
 import moe.ono.hooks._base.BaseSwitchFunctionHookItem
 import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.loader.hookapi.IHijacker
