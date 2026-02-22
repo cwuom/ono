@@ -1,6 +1,5 @@
 package moe.ono.hooks.item.developer;
 
-import static moe.ono.constants.Constants.CLAZZ_PANEL_ICON_LINEAR_LAYOUT;
 import static moe.ono.constants.Constants.MethodCacheKey_ChatPanelBtn;
 import static moe.ono.dexkit.TargetManager.requireMethod;
 import static moe.ono.util.SyncUtils.runOnUiThread;
@@ -19,8 +18,6 @@ import moe.ono.constants.Constants;
 import moe.ono.hooks._base.BaseClickableFunctionHookItem;
 import moe.ono.hooks._core.annotation.HookItem;
 import moe.ono.creator.PacketHelperDialog;
-import moe.ono.reflex.XMethod;
-import moe.ono.util.Logger;
 
 @SuppressLint("DiscouragedApi")
 @HookItem(
