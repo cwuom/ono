@@ -13,7 +13,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.textfield.TextInputLayout
 import com.lxj.xpopup.XPopup
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
@@ -28,6 +27,7 @@ import moe.ono.creator.GetChannelArkDialog
 import moe.ono.creator.JumpSchemeUriDialog
 import moe.ono.creator.PacketHelperDialog
 import moe.ono.creator.QQMessageTrackerDialog
+import moe.ono.dexkit.TargetManager
 import moe.ono.hooks.XHook
 import moe.ono.hooks._base.BaseClickableFunctionHookItem
 import moe.ono.hooks._core.annotation.HookItem
@@ -60,68 +60,62 @@ class BottomShortcutMenu : BaseClickableFunctionHookItem() {
 
     private fun hook() {
         try {
-            val method = XMethod.clz(Constants.CLAZZ_PANEL_ICON_LINEAR_LAYOUT).ret(
-                ImageView::class.java
-            ).ignoreParam().get()
+            if (ConfigManager.dGetInt(Constants.PrekCfgXXX + "bottom_shortcut_menu_mode", 0) == 1) {
+                val method = XMethod.clz(Constants.CLAZZ_PANEL_ICON_LINEAR_LAYOUT).ret(
+                    ImageView::class.java
+                ).ignoreParam().get()
 
-            hookAfter(method) { param: MethodHookParam ->
-                if (Session.getContact().chatType != ChatTypeConstants.C2C && Session.getContact().chatType != ChatTypeConstants.GROUP) {
-                    return@hookAfter
-                }
-
-                val imageView = param.result as ImageView
-
-                if (!this.isEnabled) return@hookAfter
-                if (ConfigManager.dGetInt(Constants.PrekCfgXXX + "bottom_shortcut_menu_mode", 0) == 0) {
-                    if ("拍照".contentEquals(imageView.contentDescription)) {
-                        imageView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
-                            override fun onViewAttachedToWindow(v: View) {
-                                val parent = v.parent
-                                if (parent is ViewGroup) {
-                                    Logger.d(parent::class.java.name)
-
-                                    fun foundONO(view: ViewGroup) : Boolean {
-                                        for (i in 0 until view.childCount) {
-                                            val child = view.getChildAt(i)
-                                            if (child.contentDescription == "ONO") {
-                                                return true
-                                            }
-                                        }
-                                        return false
-                                    }
-
-                                    if (!foundONO(parent)) {
-                                        val onoImageView = ImageView(parent.context)
-                                        onoImageView.setImageResource(R.drawable.ic_ouo)
-                                        onoImageView.contentDescription = "ONO"
-
-                                        val layoutParams = LinearLayout.LayoutParams(0, (28.0f * parent.resources.displayMetrics.density + 0.5f).toInt())
-                                        layoutParams.weight = 1.0f
-                                        layoutParams.gravity = 16
-
-                                        onoImageView.layoutParams = layoutParams
-
-                                        onoImageView.setOnClickListener { view ->
-                                            val fixContext =
-                                                CommonContextWrapper.createAppCompatContext(imageView.context)
-                                            popMenu(fixContext, view)
-                                        }
-
-                                        parent.addView(onoImageView, 4)
-                                    }
-                                }
-                            }
-
-                            override fun onViewDetachedFromWindow(v: View) {
-                            }
-                        })
+                hookAfter(method) { param: MethodHookParam ->
+                    if (Session.getContact().chatType != ChatTypeConstants.C2C && Session.getContact().chatType != ChatTypeConstants.GROUP) {
+                        return@hookAfter
                     }
-                } else {
+
+                    val imageView = param.result as ImageView
+
+                    if (!this.isEnabled) return@hookAfter
                     if ("红包".contentEquals(imageView.contentDescription)) {
                         imageView.setOnLongClickListener { view ->
                             val fixContext = CommonContextWrapper.createAppCompatContext(imageView.context)
                             popMenu(fixContext, view)
                             true
+                        }
+                    }
+                }
+            } else {
+                val method = TargetManager.requireMethod(Constants.MethodCacheKey_ChatPanelBtn)
+                hookAfter(method) { param: MethodHookParam? ->
+                    val layout = param!!.thisObject as LinearLayout
+                    if (Session.getContact().chatType != ChatTypeConstants.C2C && Session.getContact().chatType != ChatTypeConstants.GROUP) return@hookAfter
+                    if (!this.isEnabled) return@hookAfter
+                    for (i in 0..<layout.childCount) {
+                        val child = layout.getChildAt(i)
+                        if (child is ImageView && child.contentDescription != null) {
+                            if ("泡泡".contentEquals(child.contentDescription)) {
+                                child.addOnAttachStateChangeListener(object :
+                                    View.OnAttachStateChangeListener {
+                                    private val ONO_TAG = "ono_image_tag"
+                                    override fun onViewAttachedToWindow(v: View) {
+                                        v.post {
+                                            val parent = v.parent as? ViewGroup ?: return@post
+
+                                            if ((0 until parent.childCount).any {
+                                                    parent.getChildAt(it).tag == ONO_TAG
+                                                }) return@post
+
+                                            val onoIcon = ImageView(v.context).apply {
+                                                setImageResource(R.drawable.ic_ouo)
+                                                tag = ONO_TAG
+                                                setOnClickListener { v ->
+                                                    popMenu(CommonContextWrapper.createAppCompatContext(v.context), view = v)
+                                                }
+                                            }
+
+                                            parent.addView(onoIcon, minOf(4, parent.childCount))
+                                        }
+                                    }
+                                    override fun onViewDetachedFromWindow(p0: View) {}
+                                })
+                            }
                         }
                     }
                 }
