@@ -21,7 +21,7 @@ import moe.ono.util.SystemServiceUtils
 
 @SuppressLint("DiscouragedApi")
 @HookItem(
-    path = "开发者选项/GetCookie",
+    path = "开发者选项/获取 Cookie",
     description = "依赖快捷菜单, 打开后在快捷菜单使用"
 )
 class GetCookie : BaseSwitchFunctionHookItem() {

@@ -18,7 +18,7 @@ import moe.ono.util.SystemServiceUtils
 
 @SuppressLint("DiscouragedApi")
 @HookItem(
-    path = "开发者选项/GetBknByCookie",
+    path = "开发者选项/获取 Bkn",
     description = "依赖快捷菜单, 打开后在快捷菜单使用"
 )
 class GetBknByCookie : BaseSwitchFunctionHookItem() {

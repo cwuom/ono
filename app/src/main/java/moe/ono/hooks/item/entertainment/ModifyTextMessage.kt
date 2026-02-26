@@ -101,7 +101,7 @@ class ModifyTextMessage : BaseSwitchFunctionHookItem(), OnMenuBuilder {
 
         val item: Any = CustomMenu.createItemIconNt(
             aioMsgItem,
-            "Edit",
+            "修改",
             R.drawable.ic_baseline_border_color_24,
             R.id.item_modify_text_message
         ) {

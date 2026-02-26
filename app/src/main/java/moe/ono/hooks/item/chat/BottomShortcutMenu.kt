@@ -103,7 +103,6 @@ class BottomShortcutMenu : BaseClickableFunctionHookItem() {
                                                 }) return@post
 
                                             val onoIcon = ImageView(v.context).apply {
-                                                setImageResource(R.drawable.ic_ouo)
                                                 tag = ONO_TAG
                                                 setOnClickListener { v ->
                                                     popMenu(CommonContextWrapper.createAppCompatContext(v.context), view = v)
@@ -170,13 +169,13 @@ class BottomShortcutMenu : BaseClickableFunctionHookItem() {
             items.add("已读追踪")
         }
         if (getCookie) {
-            items.add("GetCookie")
+            items.add("获取 Cookie")
         }
         if (getBknByCookie) {
-            items.add("GetBknByCookie")
+            items.add("获取 Bkn")
         }
         if (getChannelArk) {
-            items.add("GetChannelArk")
+            items.add("获取频道卡片")
         }
         if (jumpSchemeUri) {
             items.add("打开 Scheme 链接")
@@ -247,7 +246,7 @@ class BottomShortcutMenu : BaseClickableFunctionHookItem() {
                             ).path, false
                         )
                     }
-                    "GetCookie" -> {
+                    "获取 Cookie" -> {
                         SyncUtils.runOnUiThread {
                             val builder = MaterialAlertDialogBuilder(
                                 CommonContextWrapper.createAppCompatContext(view.context)
@@ -272,7 +271,7 @@ class BottomShortcutMenu : BaseClickableFunctionHookItem() {
                             builder.show()
                         }
                     }
-                    "GetBknByCookie" -> {
+                    "获取 Bkn" -> {
                         SyncUtils.runOnUiThread {
                             val builder = MaterialAlertDialogBuilder(CommonContextWrapper.createAppCompatContext(view.context))
 
@@ -293,7 +292,7 @@ class BottomShortcutMenu : BaseClickableFunctionHookItem() {
                             builder.show()
                         }
                     }
-                    "GetChannelArk" -> {
+                    "获取频道卡片" -> {
                         SyncUtils.runOnUiThread { GetChannelArkDialog.createView(view.context) }
                     }
                     "打开 Scheme 链接" -> {
@@ -450,7 +449,7 @@ class BottomShortcutMenu : BaseClickableFunctionHookItem() {
             layout.addView(checkBox)
 
             val tips = listOf(
-                "点击聊天界面下方 ONO 图标调出菜单",
+                "点击聊天界面下方泡泡消息按钮调出菜单",
                 "长按聊天界面下方红包按钮调出菜单"
             )
             val currentIndex = ConfigManager.dGetInt(Constants.PrekCfgXXX + "bottom_shortcut_menu_mode", 0)
@@ -461,7 +460,7 @@ class BottomShortcutMenu : BaseClickableFunctionHookItem() {
                 setPadding(0, 16, 0, 0)
             }
             val dropdown = AutoCompleteTextView(fixContext).apply {
-                val options = listOf("增加 ONO 图标", "红包")
+                val options = listOf("泡泡消息", "红包")
                 isFocusable = false
                 isCursorVisible = false
                 isLongClickable = false
