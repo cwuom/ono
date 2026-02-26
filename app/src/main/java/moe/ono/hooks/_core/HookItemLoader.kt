@@ -9,7 +9,6 @@ import moe.ono.hooks._base.BaseSwitchFunctionHookItem
 import moe.ono.hooks._core.factory.HookItemFactory
 import moe.ono.util.Logger
 
-
 class HookItemLoader {
     /**
      * 加载并判断哪些需要加载
@@ -20,14 +19,14 @@ class HookItemLoader {
             val path = hookItem.path
             if (hookItem is BaseSwitchFunctionHookItem) {
                 hookItem.isEnabled = ConfigManager.getDefaultConfig().getBooleanOrFalse("$PrekXXX${hookItem.path}")
-                if (hookItem.isEnabled && process == hookItem.targetProcess) {
+                if (hookItem.isEnabled && (process and hookItem.targetProcess) != 0) {
                     Logger.i("[BaseSwitchFunctionHookItem] Initializing $path...")
                     hookItem.startLoad()
                 }
             }
             else if (hookItem is BaseClickableFunctionHookItem) {
                 hookItem.isEnabled = ConfigManager.getDefaultConfig().getBooleanOrFalse("$PrekClickableXXX${hookItem.path}")
-                if (hookItem.isEnabled && process == hookItem.targetProcess) {
+                if (hookItem.isEnabled && (process and hookItem.targetProcess) != 0) {
                     Logger.i("[BaseClickableFunctionHookItem] Initializing $path...")
                     hookItem.startLoad()
                 }
@@ -38,14 +37,11 @@ class HookItemLoader {
                 }
             }
             else {
-                if (hookItem is ApiHookItem && process == hookItem.targetProcess){
+                if (hookItem is ApiHookItem && (process and hookItem.targetProcess) != 0){
                     Logger.i("[API] Initializing $path...")
                     hookItem.startLoad()
                 }
             }
-
-
         }
     }
-
 }
