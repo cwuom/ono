@@ -12,7 +12,7 @@ import moe.ono.util.FunProtoData
 import org.json.JSONArray
 import org.json.JSONObject
 
-@HookItem(path = "娱乐功能/假群主", description = "* 随便发点消息，概率变成群主头衔\n* 管理员无效")
+@HookItem(path = "娱乐功能/假群主", description = "仅供娱乐：随便发点消息，概率变成群主头衔\n* 管理员无效")
 class FakeGroupOwner: BaseSwitchFunctionHookItem() {
     override fun entry(classLoader: ClassLoader) {
         QQMsfReqHandler.handler.add(object : IMsfHandler {
