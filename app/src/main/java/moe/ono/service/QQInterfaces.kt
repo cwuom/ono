@@ -169,8 +169,15 @@ abstract class QQInterfaces {
             if (!this::mHandlerResponse.isInitialized) {
                 throw RuntimeException("初始化失败 -> mHandlerResponse")
             }
-            if (!this::mqqService.isInitialized) {
-                throw RuntimeException("初始化失败 -> mqqService")
+            if (!this::mqqService.isInitialized) { // 9.2.70 修复
+                app.getMethods(false).forEach {
+                    if (it.returnType == cBaseService && it.isPublic
+                        && it.name == "getMobileQQService" && it.paramCount == 0) {
+                        Logger.d(it.toString())
+                        it.isAccessible = true
+                        mqqService = it.invoke(app)!!
+                    }
+                }
             }
 
         }

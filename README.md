@@ -43,6 +43,10 @@ QQ, Now with Superpowers
   <td><a href="https://github.com/fuqiuluo/QwQ">QWQ</a></td>
   <td>QwQ sacrifice - To make OICQ great again</td>
 </tr>
+<tr>
+  <td><a href="https://github.com/LuckyPray/XAutoDaily">XAutoDaily</a></td>
+  <td>一个基于QQ的全自动签到模块</td>
+</tr>
 </table>
 
 
