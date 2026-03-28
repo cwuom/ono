@@ -75,7 +75,7 @@ public class MethodFinderDialog extends CenterPopupView {
         });
     }
 
-    public void stopAllServices(Context context) {
+    public static void stopAllServices(Context context) {
         ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         if (activityManager != null) {
             for (ActivityManager.RunningServiceInfo service : activityManager.getRunningServices(Integer.MAX_VALUE)) {

@@ -17,6 +17,7 @@ public class Constants {
     public static final String MethodCacheKey_getBuddyName = "method_getBuddyName";
     public static final String MethodCacheKey_getDiscussionMemberShowName = "method_getDiscussionMemberShowName";
     public static final String MethodCacheKey_ChatPanelBtn = "method_chatPanelBtn";
+    public static final String MethodCacheKey_JumpParser = "method_JumpParser";
     public static final String ClazzCacheKey_AbstractQQCustomMenuItem = "clazz_AbstractQQCustomMenuItem";
 
     public static final String PrekXXX = "setting_switch_value_";

@@ -1,16 +1,19 @@
 package moe.ono.hooks.base.api
 
-import android.content.Context
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
-import de.robv.android.xposed.XposedHelpers
-import moe.ono.hooks._base.BaseSwitchFunctionHookItem
+import moe.ono.config.ConfigManager
+import moe.ono.constants.Constants
+import moe.ono.creator.center.MethodFinderDialog
+import moe.ono.dexkit.TargetManager
+import moe.ono.hooks._base.ApiHookItem
 import moe.ono.hooks._core.annotation.HookItem
+import moe.ono.util.ContextUtils
 import moe.ono.util.Logger
 import java.util.concurrent.ConcurrentHashMap
 
 @HookItem(path = "API/MqqapiHandler", description = "监听 Mqqapi")
-class MqqapiHandler : BaseSwitchFunctionHookItem() {
+class MqqapiHandler : ApiHookItem() {
 
     private val hookedClasses = ConcurrentHashMap.newKeySet<String>()
     companion object {
@@ -19,48 +22,24 @@ class MqqapiHandler : BaseSwitchFunctionHookItem() {
 
     override fun entry(classLoader: ClassLoader) {
         Logger.d("MqqapiHandler loaded")
-        hookBr(classLoader)
+        if (TargetManager.requireMethod(Constants.MethodCacheKey_JumpParser) == null && !TargetManager.isNeedFindTarget()) {
+            TargetManager.setIsNeedFindTarget(true)
+            ContextUtils.getCurrentActivity().finish()
+            MethodFinderDialog.stopAllServices(ContextUtils.getCurrentActivity())
+        } else {
+            Logger.d(ConfigManager.cGetString(Constants.MethodCacheKey_JumpParser, "null"))
+        }
+        hookBr()
     }
 
-    private fun hookBr(classLoader: ClassLoader) {
+    private fun hookBr() {
         try {
-            XposedHelpers.findAndHookMethod(
-                "com.tencent.mobileqq.utils.br",
-                classLoader,
-                "c",
-                XposedHelpers.findClass("com.tencent.common.app.business.BaseQQAppInterface", classLoader),
-                Context::class.java,
-                String::class.java,
-                object : XC_MethodHook() {
-                    override fun afterHookedMethod(param: MethodHookParam) {
-                        try {
-                            val url = param.args.getOrNull(2) as? String ?: return
-                            if (!url.startsWith("mqqapi://")) return
-
-                            val result = param.result ?: run {
-                                Logger.d("""
-                                    [br.c][after]
-                                    url=$url
-                                    result=null
-                                """.trimIndent())
-                                return
-                            }
-
-                            val actualClass = result.javaClass
-//                            Logger.d("""
-//                                [br.c][after]
-//                                url=$url
-//                                actionClass=${actualClass.name}
-//                                action=$result
-//                            """.trimIndent())
-
-                            hookActualAzClass(actualClass)
-                        } catch (t: Throwable) {
-                            Logger.e(t)
-                        }
-                    }
+            hookBefore(TargetManager.requireMethod(Constants.MethodCacheKey_JumpParser)) { param ->
+                Logger.d(param.args[2] as String)
+                listeners.forEach { listener ->
+                    listener(param)
                 }
-            )
+            }
             Logger.d("MqqapiHandler hook br.c() success")
         } catch (t: Throwable) {
             Logger.e(t)

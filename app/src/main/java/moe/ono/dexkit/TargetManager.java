@@ -8,6 +8,7 @@ import static moe.ono.constants.Constants.ClazzCacheKey_AbstractQQCustomMenuItem
 import static moe.ono.constants.Constants.MethodCacheKey_AIOParam;
 import static moe.ono.constants.Constants.MethodCacheKey_ChatPanelBtn;
 import static moe.ono.constants.Constants.MethodCacheKey_InputRoot;
+import static moe.ono.constants.Constants.MethodCacheKey_JumpParser;
 import static moe.ono.constants.Constants.MethodCacheKey_MarkdownAIO;
 import static moe.ono.constants.Constants.MethodCacheKey_getBuddyName;
 import static moe.ono.constants.Constants.MethodCacheKey_getDiscussionMemberShowName;
@@ -71,6 +72,7 @@ public class TargetManager {
                 findAndCache(bridge, cl, MethodMatcher.create().usingStrings("getBuddyName()"), MethodCacheKey_getBuddyName, out);
                 findAndCache(bridge, cl, MethodMatcher.create().usingStrings("getDiscussionMemberShowName uin is null"), MethodCacheKey_getDiscussionMemberShowName, out);
                 findAndCache(bridge, cl, MethodMatcher.create().usingStrings("peerUid").usingStrings("panelCallback"), MethodCacheKey_ChatPanelBtn, out);
+                findAndCache(bridge, cl, MethodMatcher.create().usingStrings("JumpParser parser Exception =", "keyJumpParserUtilSceneErrorKey"), MethodCacheKey_JumpParser, out);
 
                 // Class
                 findAndCacheClass(bridge, cl,
