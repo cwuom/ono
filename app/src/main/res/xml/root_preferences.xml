@@ -3,31 +3,31 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory
         android:key="settings_category"
-        android:title="设定">
+        android:title="&#x8BBE;&#x5B9A;">
         <Preference
-            app:key="聊天与消息"
+            app:key="&#x804A;&#x5929;&#x4E0E;&#x6D88;&#x606F;"
             app:icon="@drawable/ic_twotone_message_24"
-            app:title="聊天与消息" />
+            app:title="&#x804A;&#x5929;&#x4E0E;&#x6D88;&#x606F;" />
 
         <Preference
-            app:key="资料卡"
+            app:key="&#x8D44;&#x6599;&#x5361;"
             app:icon="@drawable/ic_profile"
-            app:title="资料卡" />
+            app:title="&#x8D44;&#x6599;&#x5361;" />
 
         <Preference
-            app:key="优化与修复"
+            app:key="&#x4F18;&#x5316;&#x4E0E;&#x4FEE;&#x590D;"
             app:icon="@drawable/ic_baseline_auto_fix_high_24"
-            app:title="优化与修复" />
+            app:title="&#x4F18;&#x5316;&#x4E0E;&#x4FEE;&#x590D;" />
 
         <Preference
-            app:key="开发者选项"
+            app:key="&#x5F00;&#x53D1;&#x8005;&#x9009;&#x9879;"
             app:icon="@drawable/ic_baseline_developer_mode_24"
-            app:title="开发者选项" />
+            app:title="&#x5F00;&#x53D1;&#x8005;&#x9009;&#x9879;" />
 
         <Preference
-            app:key="娱乐功能"
+            app:key="&#x5A31;&#x4E50;&#x529F;&#x80FD;"
             app:icon="@drawable/ic_baseline_free_breakfast_24"
-            app:title="娱乐功能" />
+            app:title="&#x5A31;&#x4E50;&#x529F;&#x80FD;" />
 
         <Preference
             app:key="Sigma"
@@ -38,23 +38,31 @@
 
     <PreferenceCategory
         android:key="debug_category"
-        android:title="调试">
+        android:title="&#x8C03;&#x8BD5;">
 
         <rikka.material.preference.MaterialSwitchPreference
             android:icon="@drawable/ic_baseline_border_color_24"
             android:key="prek_enable_log"
-            android:title="日志记录"
-            android:summary="反馈问题前必须开启日志记录"
+            android:title="&#x65E5;&#x5FD7;&#x8BB0;&#x5F55;"
+            android:summary="&#x53CD;&#x9988;&#x95EE;&#x9898;&#x524D;&#x5FC5;&#x987B;&#x5F00;&#x542F;&#x65E5;&#x5FD7;&#x8BB0;&#x5F55;"
             android:defaultValue="false"
-            android:persistent="false"
-            />
+            android:persistent="false" />
 
+        <Preference
+            android:key="log_directory"
+            android:title="&#x65E5;&#x5FD7;&#x76EE;&#x5F55;"
+            android:summary="&#x70B9;&#x51FB;&#x590D;&#x5236;&#x65E5;&#x5FD7;&#x76EE;&#x5F55;&#x8DEF;&#x5F84;" />
+
+        <Preference
+            android:key="clear_logs"
+            android:title="&#x6E05;&#x7A7A;&#x65E5;&#x5FD7;"
+            android:summary="&#x5220;&#x9664;&#x5DF2;&#x4FDD;&#x5B58;&#x7684;&#x8FD0;&#x884C;&#x65E5;&#x5FD7;&#x548C;&#x9519;&#x8BEF;&#x65E5;&#x5FD7;" />
 
     </PreferenceCategory>
 
     <PreferenceCategory
         android:key="compatibility_category"
-        android:title="兼容">
+        android:title="&#x517C;&#x5BB9;">
 
         <rikka.preference.SimpleMenuPreference
             android:defaultValue="1"
@@ -64,23 +72,21 @@
             app:defaultValue="50"
             android:key="hook_priority"
             android:summary="%s"
-            android:title="XC_MethodHook 优先级"
-            android:persistent="false"
-            />
-
+            android:title="XC_MethodHook &#x4F18;&#x5148;&#x7EA7;"
+            android:persistent="false" />
 
     </PreferenceCategory>
 
     <PreferenceCategory
         android:key="about_category"
-        android:title="关于">
+        android:title="&#x5173;&#x4E8E;">
         <Preference
-            android:title="版本"
+            android:title="&#x7248;&#x672C;"
             app:key="version"
             app:summary="N/A" />
 
         <Preference
-            android:title="编译时间"
+            android:title="&#x7F16;&#x8BD1;&#x65F6;&#x95F4;"
             app:key="build_time"
             app:summary="N/A" />
 

@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.format.Formatter
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -49,6 +50,8 @@ import moe.ono.hooks.item.sigma.QQSurnamePredictor
 import moe.ono.hostInfo
 import moe.ono.isInHostProcess
 import moe.ono.ui.ThemeAttrUtils
+import moe.ono.util.LogUtils
+import moe.ono.util.SystemServiceUtils
 import moe.ono.ui.view.BgEffectPainter
 import moe.ono.util.Utils.convertTimestampToDate
 import moe.ono.util.Utils.jump
@@ -191,14 +194,18 @@ open class OUOSettingActivity : BaseActivity() {
             val buildTime = findPreference<Preference>("build_time")
             val buildUUID = findPreference<Preference>("build_uuid")
             val enableLog = findPreference<MaterialSwitchPreference>("prek_enable_log")
+            val logDirectory = findPreference<Preference>("log_directory")
+            val clearLogs = findPreference<Preference>("clear_logs")
             val hookPriority = findPreference<SimpleMenuPreference>("hook_priority")
             version?.setSummary(BuildConfig.VERSION_NAME)
             buildTime?.setSummary(convertTimestampToDate(BuildConfig.BUILD_TIMESTAMP))
             buildUUID?.setSummary(BuildConfig.BUILD_UUID)
             enableLog?.isChecked = ConfigManager.getDefaultConfig().getBooleanOrFalse(PrekEnableLog)
+            refreshLogPreferences(logDirectory, clearLogs)
             enableLog?.setOnPreferenceChangeListener { _, newValue ->
                 val isEnabled = newValue as Boolean
                 ConfigManager.getDefaultConfig().edit().putBoolean(PrekEnableLog, isEnabled).apply()
+                refreshLogPreferences(logDirectory, clearLogs)
                 true
             }
 
@@ -223,7 +230,33 @@ open class OUOSettingActivity : BaseActivity() {
                     jump(requireContext(), "https://github.com/cwuom/ono")
                     return super.onPreferenceTreeClick(preference)
                 }
-                "build_time", "build_uuid", "version","prek_enable_log", "hook_priority" -> {
+                "log_directory" -> {
+                    val path = LogUtils.getLogRootDirectory()
+                    SystemServiceUtils.copyToClipboard(requireContext(), path)
+                    Toasts.success(requireContext(), "\u65E5\u5FD7\u76EE\u5F55\u5DF2\u590D\u5236")
+                    return super.onPreferenceTreeClick(preference)
+                }
+                "clear_logs" -> {
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("\u786E\u5B9A\u6E05\u7A7A\u65E5\u5FD7\u5417\uFF1F")
+                        .setMessage("\u8FD9\u4F1A\u5220\u9664\u5F53\u524D\u5DF2\u4FDD\u5B58\u7684\u8FD0\u884C\u65E5\u5FD7\u548C\u9519\u8BEF\u65E5\u5FD7")
+                        .setPositiveButton("确定") { _, _ ->
+                            val cleared = LogUtils.clearLogs()
+                            refreshLogPreferences(
+                                findPreference<Preference>("log_directory"),
+                                findPreference<Preference>("clear_logs")
+                            )
+                            if (cleared) {
+                                Toasts.success(requireContext(), "\u65E5\u5FD7\u5DF2\u6E05\u7A7A")
+                            } else {
+                                Toasts.error(requireContext(), "\u65E5\u5FD7\u6E05\u7A7A\u5931\u8D25")
+                            }
+                        }
+                        .setNegativeButton("取消", null)
+                        .show()
+                    return super.onPreferenceTreeClick(preference)
+                }
+                "build_time", "build_uuid", "version", "prek_enable_log", "hook_priority" -> {
                     return super.onPreferenceTreeClick(preference)
                 }
             }
@@ -238,6 +271,13 @@ open class OUOSettingActivity : BaseActivity() {
                 startActivity(intent)
             }
             return super.onPreferenceTreeClick(preference)
+        }
+
+        private fun refreshLogPreferences(logDirectory: Preference?, clearLogs: Preference?) {
+            val context = context ?: return
+            val size = Formatter.formatFileSize(context, LogUtils.getLogDirectorySize())
+            logDirectory?.summary = LogUtils.getLogRootDirectory() + "\n当前占用：" + size
+            clearLogs?.summary = "删除已保存的运行日志和错误日志（当前占用：" + size + "）"
         }
     }
 

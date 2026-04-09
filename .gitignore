@@ -1941,3 +1941,21 @@ Thumbs.db
 /build-logic/convention/build/generated-sources/kotlin-dsl-plugins/kotlin/BuildLogic_android_basePlugin.kt
 /build-logic/convention/build/generated-sources/kotlin-dsl-plugins/kotlin/BuildLogic_android_libraryPlugin.kt
 /build-logic/convention/build/generated-sources/kotlin-dsl-plugins/kotlin/BuildLogic_rootProjectPlugin.kt
+
+# Local tooling and crash artifacts
+/.kotlin/
+/.claude/
+/%APPDATA%/
+/202604*/
+/hs_err_pid*.log
+/crash_hit_flag
+/env_info
+/java_threads
+/java_trace
+/java_trace_analysis
+/logcat
+/maps
+/native_trace
+/status
+/summary
+/trace_module
