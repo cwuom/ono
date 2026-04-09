@@ -45,6 +45,38 @@ abstract class QQInterfaces {
             return null
         }
 
+        private fun isRuntimeReady(): Boolean {
+            return this::mRealHandlerReq.isInitialized
+                && this::mHandlerResponse.isInitialized
+                && this::mqqService.isInitialized
+        }
+
+        private fun collectMissingMembers(): String {
+            val missingMembers = mutableListOf<String>()
+            if (!this::mRealHandlerReq.isInitialized) {
+                missingMembers.add("mRealHandlerReq")
+            }
+            if (!this::mHandlerResponse.isInitialized) {
+                missingMembers.add("mHandlerResponse")
+            }
+            if (!this::mqqService.isInitialized) {
+                missingMembers.add("mqqService")
+            }
+            return missingMembers.joinToString()
+        }
+
+        private fun ensureRuntimeReady(): Boolean {
+            if (isRuntimeReady()) {
+                return true
+            }
+            update()
+            if (isRuntimeReady()) {
+                return true
+            }
+            Logger.e("QQInterfaces: runtime unavailable -> ${collectMissingMembers()}")
+            return false
+        }
+
         var app = (if (PlatformUtils.isMqqPackage())
             MobileQQ.getMobileQQ().waitAppRuntime()
         else
@@ -69,8 +101,6 @@ abstract class QQInterfaces {
             sendToServiceMsg(toServiceMsg)
         }
 
-
-        // FIXME: 部分情况下发包失败 ，但无法精准复现
         fun sendOidbSvcTrpcTcp(
             cmd: String,
             flag: Int,
@@ -82,6 +112,9 @@ abstract class QQInterfaces {
                 appSeq = generateSeq()
             }
             try {
+                if (!ensureRuntimeReady()) {
+                    throw IllegalStateException("QQInterfaces runtime unavailable")
+                }
                 sendReq(toServiceMsg)
             } catch (e: Exception) {
                 Logger.e(e)
@@ -92,9 +125,10 @@ abstract class QQInterfaces {
         }
 
         private fun sendReq(toServiceMsg: ToServiceMsg) {
-            // qq <= 8.9.8
+            if (!ensureRuntimeReady()) {
+                throw IllegalStateException("QQInterfaces runtime unavailable")
+            }
             toServiceMsg.extraData.putBoolean("req_pb_protocol_flag", true)
-            // qq >= 8.9.10
             toServiceMsg.attributes["req_pb_protocol_flag"] = true
             if (mRealHandlerReq.parameterTypes.size == 2) {
                 MethodHandleUtil.invokeSpecial<Unit>(mqqService, mRealHandlerReq, toServiceMsg, IServlet::class.java)
@@ -104,10 +138,16 @@ abstract class QQInterfaces {
         }
 
         private fun decodeResponse(toServiceMsg: ToServiceMsg, fromServiceMsg: FromServiceMsg) {
+            if (!ensureRuntimeReady()) {
+                throw IllegalStateException("QQInterfaces runtime unavailable")
+            }
             MethodHandleUtil.invokeSpecial<Unit>(mqqService, mHandlerResponse, fromServiceMsg.isSuccess, toServiceMsg, fromServiceMsg, null)
         }
 
         fun receive(seq: Int): JSONObject? {
+            if (!ensureRuntimeReady()) {
+                return null
+            }
             val startTime = System.currentTimeMillis()
             while (System.currentTimeMillis() - startTime < 5_000) {
                 Thread.sleep(120)
@@ -126,13 +166,18 @@ abstract class QQInterfaces {
             return null
         }
 
-        fun update(){
+        fun update() {
             app = (if (PlatformUtils.isMqqPackage())
                 MobileQQ.getMobileQQ().waitAppRuntime()
             else
                 MobileQQ.getMobileQQ().waitAppRuntime(null)) as AppInterface
 
-            val cBaseService = load("com.tencent.mobileqq.service.MobileQQServiceBase")!!
+            val cBaseService = load("com.tencent.mobileqq.service.MobileQQServiceBase")
+            if (cBaseService == null) {
+                Logger.e("QQInterfaces.update: MobileQQServiceBase not found")
+                return
+            }
+
             cBaseService.getMethods(false).forEach {
                 if (it.returnType == Void.TYPE && it.isPublic) {
                     val paramTypes = it.parameterTypes
@@ -155,33 +200,38 @@ abstract class QQInterfaces {
                     }
                 }
             }
-            app.getFields(false).forEach {
+            app.getFields().forEach {
                 if (cBaseService.isAssignableFrom(it.type)) {
                     Logger.d(it.name)
                     it.isAccessible = true
-                    mqqService = it.get(app)!!
-                }
-            }
-
-            if (!this::mRealHandlerReq.isInitialized) {
-                throw RuntimeException("初始化失败 -> mRealHandlerReq")
-            }
-            if (!this::mHandlerResponse.isInitialized) {
-                throw RuntimeException("初始化失败 -> mHandlerResponse")
-            }
-            if (!this::mqqService.isInitialized) { // 9.2.70 修复
-                app.getMethods(false).forEach {
-                    if (it.returnType == cBaseService && it.isPublic
-                        && it.name == "getMobileQQService" && it.paramCount == 0) {
-                        Logger.d(it.toString())
-                        it.isAccessible = true
-                        mqqService = it.invoke(app)!!
+                    val service = it.get(app)
+                    if (service != null) {
+                        mqqService = service
+                        return@forEach
                     }
                 }
             }
 
+            if (!this::mqqService.isInitialized) {
+                app.getMethods().forEach {
+                    if (it.isPublic
+                        && it.name == "getMobileQQService"
+                        && it.paramCount == 0
+                        && cBaseService.isAssignableFrom(it.returnType)) {
+                        Logger.d(it.toString())
+                        it.isAccessible = true
+                        val service = it.invoke(app)
+                        if (service != null) {
+                            mqqService = service
+                            return@forEach
+                        }
+                    }
+                }
+            }
+
+            if (!isRuntimeReady()) {
+                Logger.e("QQInterfaces.update: init failed -> ${collectMissingMembers()}")
+            }
         }
     }
-
-
 }

@@ -141,9 +141,12 @@ public class QLauncher {
                 Parasitics.injectModuleResources(CacheConfig.getSplashActivity().getResources());
                 Parasitics.initForStubActivity(ctx);
                 ServletPool.INSTANCE.injectServlet();
-                QQInterfaces.Companion.update();
+                try {
+                    QQInterfaces.Companion.update();
+                } catch (Throwable e) {
+                    Logger.e("QQInterfaces.update failed during startup", e);
+                }
             });
         }
     }
 }
-
