@@ -11,13 +11,15 @@ import moe.ono.hooks._base.ApiHookItem
 import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.reflex.ClassUtils
 import moe.ono.reflex.FieldUtils
-import moe.ono.reflex.Ignore
 import moe.ono.reflex.MethodUtils
 import moe.ono.util.HostInfo
+import moe.ono.util.Logger
+import java.lang.reflect.Method
+import java.lang.reflect.Modifier
+import java.util.LinkedHashSet
 
 @HookItem(path = "API/适配QQMsg内容ViewID")
 class QQMsgViewAdapter : ApiHookItem() {
-
 
     companion object {
         private var contentViewId = 0
@@ -38,7 +40,7 @@ class QQMsgViewAdapter : ApiHookItem() {
         }
     }
 
-    private var unhook: XC_MethodHook.Unhook? = null
+    private val unhooks = ArrayList<XC_MethodHook.Unhook>()
 
     private fun findContentViewId(): Int {
         return cGetInt(
@@ -55,43 +57,99 @@ class QQMsgViewAdapter : ApiHookItem() {
     }
 
     override fun entry(loader: ClassLoader) {
-        if (findContentViewId() > 0) {
-            contentViewId = findContentViewId()
+        val cachedViewId = findContentViewId()
+        if (cachedViewId > 0) {
+            contentViewId = cachedViewId
             return
         }
-        val onMsgViewUpdate =
-            MethodUtils.create("com.tencent.mobileqq.aio.msglist.holder.AIOBubbleMsgItemVB")
+
+        val holderClass = ClassUtils.findClass("com.tencent.mobileqq.aio.msglist.holder.AIOBubbleMsgItemVB")
+        val candidateMethods = collectCandidateMethods(holderClass)
+        if (candidateMethods.isEmpty()) {
+            Logger.e("适配QQMsg内容ViewID", "No candidate update method found in ${holderClass.name}")
+            return
+        }
+
+        candidateMethods.forEach { method ->
+            unhooks.add(hookAfter(method) { param ->
+                handleItemViewUpdate(param.thisObject)
+            })
+        }
+    }
+
+    private fun collectCandidateMethods(holderClass: Class<*>): List<Method> {
+        val candidates = LinkedHashSet<Method>()
+        try {
+            MethodUtils.create(holderClass)
+                .methodName("handleUIState")
                 .returnType(Void.TYPE)
-                .params(Int::class.java, Ignore::class.java, List::class.java, Bundle::class.java)
-                .first()
-        unhook = hookAfter(onMsgViewUpdate) { param ->
-            val thisObject = param.thisObject
-            val msgView = FieldUtils.create(thisObject)
-                .fieldType(View::class.java)
-                .firstValue<View>(thisObject)
+                .getResult()
+                .forEach { candidates.add(it) }
+        } catch (_: Throwable) {
+        }
 
-            val aioMsgItem = FieldUtils.create(thisObject)
-                .fieldType(ClassUtils.findClass("com.tencent.mobileqq.aio.msg.AIOMsgItem"))
-                .firstValue<Any>(thisObject)
+        holderClass.declaredMethods
+            .filterTo(candidates) { isCandidateMethod(it) }
+        return candidates.toList()
+    }
 
-            if (aioMsgItem == null || msgView == null) return@hookAfter
+    private fun isCandidateMethod(method: Method): Boolean {
+        if (Modifier.isStatic(method.modifiers) || method.returnType != Void.TYPE) {
+            return false
+        }
+        val parameterTypes = method.parameterTypes
+        if (parameterTypes.size !in 3..5) {
+            return false
+        }
+        val containsList = parameterTypes.any { List::class.java.isAssignableFrom(it) }
+        val containsBundle = parameterTypes.any { Bundle::class.java.isAssignableFrom(it) }
+        val containsInt = parameterTypes.any {
+            it == Int::class.javaPrimitiveType || it == Int::class.javaObjectType
+        }
+        return containsList && containsBundle && containsInt
+    }
 
-            val msgRecord: Any = MethodUtils.create(aioMsgItem.javaClass).methodName("getMsgRecord")
-                .callFirst(aioMsgItem)
+    private fun handleItemViewUpdate(thisObject: Any) {
+        if (contentViewId > 0) {
+            clearHooks()
+            return
+        }
 
-            val elements: ArrayList<Any> = FieldUtils.getField(
-                msgRecord, "elements",
-                ArrayList::class.java
-            )
+        val msgView = FieldUtils.create(thisObject)
+            .fieldType(View::class.java)
+            .firstValue<View>(thisObject) ?: return
 
-            for (msgElement in elements) {
-                val type: Int =
-                    FieldUtils.getField(msgElement, "elementType", Int::class.javaPrimitiveType)
-                //文本和图片类型的view 不解析其他类型的 否则解析不出来
-                if (type <= 2) {
-                    findContentView(msgView as ViewGroup)
-                    break
+        val aioMsgItem = FieldUtils.create(thisObject)
+            .fieldType(ClassUtils.findClass("com.tencent.mobileqq.aio.msg.AIOMsgItem"))
+            .firstValue<Any>(thisObject) ?: return
+
+        val msgRecord = try {
+            MethodUtils.create(aioMsgItem.javaClass)
+                .methodName("getMsgRecord")
+                .callFirst<Any>(aioMsgItem)
+        } catch (_: Throwable) {
+            return
+        }
+
+        val elements = try {
+            FieldUtils.getField<ArrayList<Any>>(msgRecord, "elements", ArrayList::class.java)
+        } catch (_: Throwable) {
+            return
+        }
+
+        val msgViewGroup = msgView as? ViewGroup ?: return
+        for (msgElement in elements) {
+            val type = try {
+                FieldUtils.getField<Int>(msgElement, "elementType", Int::class.javaPrimitiveType)
+            } catch (_: Throwable) {
+                continue
+            }
+            if (type <= 2) {
+                findContentView(msgViewGroup)
+                if (contentViewId > 0) {
+                    clearHooks()
                 }
+                break
             }
         }
     }
@@ -102,11 +160,18 @@ class QQMsgViewAdapter : ApiHookItem() {
             if (child.javaClass.name == "com.tencent.qqnt.aio.holder.template.BubbleLayoutCompatPress") {
                 contentViewId = child.id
                 putContentViewId(child.id)
-                //解开hook
-                unhook?.unhook()
                 break
             }
         }
     }
 
+    private fun clearHooks() {
+        unhooks.forEach {
+            try {
+                it.unhook()
+            } catch (_: Throwable) {
+            }
+        }
+        unhooks.clear()
+    }
 }
