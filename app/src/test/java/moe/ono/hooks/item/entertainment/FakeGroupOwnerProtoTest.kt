@@ -187,7 +187,7 @@ class FakeGroupOwnerProtoTest {
     }
 
     @Test
-    fun preservesAndRecalculatesFourByteLengthHeader() {
+    fun stripsFourByteLengthHeaderForResigning() {
         val payload = packet(
             isGroup = true,
             elements = listOf(textElement("ui。").toByteString())
@@ -196,8 +196,7 @@ class FakeGroupOwnerProtoTest {
 
         val patched = requireNotNull(FakeGroupOwnerProto.patchWupBuffer(framed))
 
-        assertEquals(patched.size, ByteBuffer.wrap(patched).int)
-        val after = parse(patched.copyOfRange(4, patched.size))
+        val after = parse(patched)
         assertCanonicalOwnerElement(parse(elementBytes(after).last()))
     }
 

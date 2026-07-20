@@ -10,6 +10,7 @@ import moe.ono.hooks._base.BaseSwitchFunctionHookItem
 import moe.ono.hooks._core.annotation.HookItem
 import moe.ono.hooks.base.api.QQMsfReqHandler
 import moe.ono.loader.hookapi.IMsfHandler
+import moe.ono.service.QQInterfaces
 import moe.ono.util.Logger
 import java.nio.ByteBuffer
 
@@ -23,19 +24,36 @@ class FakeGroupOwner : BaseSwitchFunctionHookItem() {
                 toServiceMsg: ToServiceMsg
             ) {
                 if (!this@FakeGroupOwner.isEnabled) return
+                if (toServiceMsg.getAttribute(RESEND_MARKER) == true) return
 
                 try {
                     val original = toServiceMsg.wupBuffer ?: return
-                    val patched = FakeGroupOwnerProto.patchWupBuffer(original) ?: return
-                    toServiceMsg.putWupBuffer(patched)
+                    val patchedPayload = FakeGroupOwnerProto.patchWupBuffer(original) ?: return
+                    val replacement = ToServiceMsg(
+                        toServiceMsg.serviceName,
+                        toServiceMsg.uin,
+                        toServiceMsg.serviceCmd
+                    ).apply {
+                        putWupBuffer(patchedPayload)
+                        addAttribute("req_pb_protocol_flag", true)
+                        addAttribute(RESEND_MARKER, true)
+                    }
+
+                    QQInterfaces.app.sendToService(replacement)
+                    param.result = null
                 } catch (t: Throwable) {
-                    Logger.e("[FakeGroupOwner] Failed to patch MessageSvc.PbSendMsg", t)
+                    Logger.e("[FakeGroupOwner] Failed to resend MessageSvc.PbSendMsg", t)
                 }
             }
 
             override val cmd: String
-                get() = "MessageSvc.PbSendMsg"
+                get() = COMMAND
         })
+    }
+
+    private companion object {
+        const val COMMAND = "MessageSvc.PbSendMsg"
+        const val RESEND_MARKER = "ono_fake_group_owner_resend"
     }
 }
 
@@ -50,9 +68,7 @@ internal object FakeGroupOwnerProto {
         } else {
             buffer
         }
-        val patchedPayload = patchPayload(payload) ?: return null
-
-        return if (hasLengthHeader) addLengthHeader(patchedPayload) else patchedPayload
+        return patchPayload(payload)
     }
 
     fun patchPayload(payload: ByteArray): ByteArray? {
@@ -225,11 +241,6 @@ internal object FakeGroupOwnerProto {
     private fun hasLengthHeader(buffer: ByteArray): Boolean {
         if (buffer.size < LENGTH_HEADER_SIZE) return false
         return ByteBuffer.wrap(buffer, 0, LENGTH_HEADER_SIZE).int == buffer.size
-    }
-
-    private fun addLengthHeader(payload: ByteArray): ByteArray {
-        val size = payload.size + LENGTH_HEADER_SIZE
-        return ByteBuffer.allocate(size).putInt(size).put(payload).array()
     }
 
     private fun parse(bytes: ByteArray): UnknownFieldSet? {
