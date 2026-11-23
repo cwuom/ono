@@ -37,7 +37,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "moe.ono"
+        applicationId = providers.gradleProperty("ono.applicationId").orElse("moe.ono").get()
         buildConfigField("String", "BUILD_UUID", "\"${buildUUID}\"")
         buildConfigField("String", "TAG", "\"[ono]\"")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")

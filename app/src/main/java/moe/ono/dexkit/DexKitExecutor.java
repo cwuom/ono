@@ -13,11 +13,13 @@ public class DexKitExecutor {
         this.classLoader = classLoader;
     }
 
-    public void execute(DexKitTask task) {
+    public boolean execute(DexKitTask task) {
         try (DexKitBridge bridge = DexKitBridge.create(apkPath)) {
             task.execute(bridge, classLoader);
-        } catch (Exception e) {
+            return true;
+        } catch (Exception | LinkageError e) {
             Logger.e("DexKitExecutor", e);
+            return false;
         }
     }
 

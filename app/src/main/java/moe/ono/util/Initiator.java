@@ -300,6 +300,7 @@ public class Initiator {
             return null;
         }
         String[] candidates = new String[]{
+                "com.tencent.mobileqq.startup.director.b",
                 "com.tencent.mobileqq.startup.director.a",
                 "com.tencent.mobileqq.h3.a.a",
                 "com.tencent.mobileqq.g3.a.a",

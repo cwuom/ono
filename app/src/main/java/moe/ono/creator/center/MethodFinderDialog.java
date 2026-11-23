@@ -60,14 +60,19 @@ public class MethodFinderDialog extends CenterPopupView {
                 ProgressBar progressBar = findViewById(R.id.progress_bar);
                 progressBar.setVisibility(View.VISIBLE);
                 TargetManager.runMethodFinder(ai,cl,activity,
-                    result -> {
+                    (result, completed) -> {
                         textView.setText(result);
-                        button.setText("重启 QQ");
+                        button.setText(completed ? "重启 QQ" : "关闭");
                         button.setVisibility(VISIBLE);
-                        flag = true;
-                        Toasts.success(activity,"完成");
+                        flag = completed;
+                        if (completed) {
+                            Toasts.info(activity,"搜索结束，请检查结果");
+                        } else {
+                            findViewById(R.id.btn_find_method).setVisibility(VISIBLE);
+                            Toasts.info(activity,"搜索失败，请重试");
+                        }
                         progressBar.setVisibility(View.GONE);
-                        TargetManager.setIsNeedFindTarget(false);
+                        TargetManager.setIsNeedFindTarget(!completed);
                     }
                 );
 
