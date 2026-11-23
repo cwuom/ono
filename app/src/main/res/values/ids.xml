@@ -4,6 +4,7 @@
     <item name="root" type="id" />
     <item name="main_activity_menuItem_toggleDesktopIcon" type="id" />
     <item type="id" name="item_save_to_panel" />
+    <item type="id" name="ono_sticker_panel_bound" />
     <item type="id" name="item_check" />
     <item type="id" name="item_pull_msg" />
     <item name="ivTitleName" type="id"/>

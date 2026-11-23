@@ -3,8 +3,8 @@ package moe.ono.hooks.item.chat
 import android.annotation.SuppressLint
 import android.text.TextUtils
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.LinearLayout
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
 import de.robv.android.xposed.XposedHelpers
 import moe.ono.R
@@ -14,7 +14,6 @@ import moe.ono.config.CacheConfig.getRKeyPrivate
 import moe.ono.config.ConfigManager
 import moe.ono.constants.Constants
 import moe.ono.constants.Constants.MethodCacheKey_ChatPanelBtn
-import moe.ono.creator.PacketHelperDialog
 import moe.ono.creator.stickerPanel.Env
 import moe.ono.creator.stickerPanel.ICreator
 import moe.ono.creator.stickerPanel.PanelUtils
@@ -32,7 +31,6 @@ import moe.ono.util.Logger
 import moe.ono.util.Session
 import moe.ono.util.SyncUtils
 import java.util.Locale
-import androidx.core.view.size
 
 
 @SuppressLint("DiscouragedApi")
@@ -47,42 +45,43 @@ class StickerPanelEntry : BaseClickableFunctionHookItem(), OnMenuBuilder {
 
 
             hookAfter(method) { param: MethodHookParam ->
-                val layout = param.thisObject as LinearLayout
-                for (i in 0..<layout.size) {
-                    val child = layout.getChildAt(i)
-                    if (child is ImageView && child.getContentDescription() != null) {
-                        val panelIcon = child
-                        if ("表情".contentEquals(panelIcon.getContentDescription())) {
-                            if (!ConfigManager.dGetBoolean(Constants.PrekCfgXXX + "replaceStickerPanelClickEvent")) {
-                                panelIcon.setOnLongClickListener { view: View ->
-                                    ICreator.createPanel(view.context)
-                                    true
-                                }
-                            } else {
-                                val listenerInfo = XposedHelpers.callMethod(panelIcon, "getListenerInfo")
-                                if (listenerInfo != null) {
-                                    val oldClick = XposedHelpers.getObjectField(listenerInfo, "mOnClickListener")
-                                            as? View.OnClickListener
-
-                                    oldClick?.let {
-                                        panelIcon.setOnLongClickListener { v ->
-                                            it.onClick(v)
-                                            true
-                                        }
-                                    }
-
-                                    panelIcon.setOnClickListener { v ->
-                                        ICreator.createPanel(v.context)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                val imageView = param.result as ImageView
+                val layout = param.thisObject as? ViewGroup ?: return@hookAfter
+                bindEmoBtn(layout)
             }
         } catch (e: NoSuchMethodException) {
             Logger.e(this.itemName, e)
+        }
+    }
+
+    private fun bindEmoBtn(view: View) {
+        if (view is ViewGroup) {
+            for (i in 0 until view.childCount) {
+                bindEmoBtn(view.getChildAt(i))
+            }
+        } else if (view is ImageView && "表情".contentEquals(view.contentDescription)) {
+            // 避免重复绑定时把模块自己的点击事件当成 QQ 原事件
+            if (view.getTag(R.id.ono_sticker_panel_bound) == true) return
+
+            if (!ConfigManager.dGetBoolean(Constants.PrekCfgXXX + "replaceStickerPanelClickEvent")) {
+                view.setOnLongClickListener {
+                    ICreator.createPanel(it.context)
+                    true
+                }
+            } else {
+                val listenerInfo = XposedHelpers.callMethod(view, "getListenerInfo") ?: return
+                val oldClick = XposedHelpers.getObjectField(listenerInfo, "mOnClickListener")
+                        as? View.OnClickListener
+                oldClick?.let { listener ->
+                    view.setOnLongClickListener {
+                        listener.onClick(it)
+                        true
+                    }
+                }
+                view.setOnClickListener {
+                    ICreator.createPanel(it.context)
+                }
+            }
+            view.setTag(R.id.ono_sticker_panel_bound, true)
         }
     }
 
