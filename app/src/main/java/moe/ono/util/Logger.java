@@ -1,104 +1,112 @@
 package moe.ono.util;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import de.robv.android.xposed.XposedBridge;
 import moe.ono.BuildConfig;
 
 public class Logger {
 
+    private static final String TAG = BuildConfig.TAG;
+
     private Logger() {
     }
 
-    private static final String TAG = BuildConfig.TAG;
-
     public static void e(@NonNull String msg) {
-        android.util.Log.e(TAG, msg);
-        LogUtils.addError("common", msg);
+        log(android.util.Log.ERROR, null, msg, null);
     }
 
     public static void e(String tag, @NonNull String msg) {
-        android.util.Log.e(TAG, tag + ": "+ msg);
+        log(android.util.Log.ERROR, tag, msg, null);
     }
 
     public static void w(@NonNull String msg) {
-        android.util.Log.w(TAG, msg);
-        LogUtils.addRunLog("common", msg);
+        log(android.util.Log.WARN, null, msg, null);
     }
+
     public static void w(String tag, @NonNull String msg) {
-        android.util.Log.w(TAG, tag + ": "+ msg);
-        LogUtils.addRunLog("common", msg);
+        log(android.util.Log.WARN, tag, msg, null);
     }
 
     public static void i(@NonNull String msg) {
-        android.util.Log.i(TAG, msg);
-        LogUtils.addRunLog("common", msg);
-    }
-    public static void i(String tag, @NonNull String msg) {
-        android.util.Log.i(TAG, tag + ": "+ msg);
-        LogUtils.addRunLog("common", msg);
+        log(android.util.Log.INFO, null, msg, null);
     }
 
+    public static void i(String tag, @NonNull String msg) {
+        log(android.util.Log.INFO, tag, msg, null);
+    }
 
     public static void d(@NonNull String msg) {
-        android.util.Log.d(TAG, msg);
-        LogUtils.addRunLog("common", msg);
+        log(android.util.Log.DEBUG, null, msg, null);
     }
+
     public static void d(String tag, @NonNull String msg) {
-        android.util.Log.d(TAG, tag + ": "+ msg);
-        LogUtils.addRunLog("common", msg);
+        log(android.util.Log.DEBUG, tag, msg, null);
     }
 
     public static void v(@NonNull String msg) {
-        android.util.Log.v(TAG, msg);
+        log(android.util.Log.VERBOSE, null, msg, null);
     }
+
     public static void v(String tag, @NonNull String msg) {
-        android.util.Log.v(TAG, tag + ": "+ msg);
+        log(android.util.Log.VERBOSE, tag, msg, null);
     }
 
     public static void e(@NonNull Throwable e) {
-        android.util.Log.e(TAG, e.toString(), e);
-        LogUtils.addError("common", e);
+        log(android.util.Log.ERROR, null, e.toString(), e);
     }
 
     public static void w(@NonNull Throwable e) {
-        android.util.Log.w(TAG, e.toString(), e);
+        log(android.util.Log.WARN, null, e.toString(), e);
     }
 
     public static void i(@NonNull Throwable e) {
-        android.util.Log.i(TAG, e.toString(), e);
+        log(android.util.Log.INFO, null, e.toString(), e);
     }
 
     public static void i(@NonNull Throwable e, boolean output) {
-        android.util.Log.i(TAG, e.toString(), e);
-        if (output){
+        log(android.util.Log.INFO, null, e.toString(), e);
+        if (output) {
             XposedBridge.log(e);
         }
     }
 
     public static void d(@NonNull Throwable e) {
-        android.util.Log.d(TAG, e.toString(), e);
+        log(android.util.Log.DEBUG, null, e.toString(), e);
     }
 
     public static void e(@NonNull String msg, @NonNull Throwable e) {
-        android.util.Log.e(TAG, msg, e);
-        LogUtils.addError("common", e);
+        log(android.util.Log.ERROR, msg, msg, e);
     }
 
     public static void w(@NonNull String msg, @NonNull Throwable e) {
-        android.util.Log.w(TAG, msg, e);
+        log(android.util.Log.WARN, msg, msg, e);
     }
 
     public static void i(@NonNull String msg, @NonNull Throwable e) {
-        android.util.Log.i(TAG, msg, e);
+        log(android.util.Log.INFO, msg, msg, e);
     }
 
     public static void d(@NonNull String msg, @NonNull Throwable e) {
-        android.util.Log.d(TAG, msg, e);
+        log(android.util.Log.DEBUG, msg, msg, e);
     }
 
     @NonNull
     public static String getStackTraceString(@NonNull Throwable th) {
         return android.util.Log.getStackTraceString(th);
+    }
+
+    private static void log(int priority, @Nullable String subTag, @NonNull String msg, @Nullable Throwable throwable) {
+        String resolvedTag = subTag == null || subTag.trim().isEmpty() ? TAG : subTag.trim();
+        String displayMessage = resolvedTag.equals(TAG) || resolvedTag.equals(msg) ? msg : resolvedTag + ": " + msg;
+
+        if (throwable == null) {
+            android.util.Log.println(priority, TAG, displayMessage);
+        } else {
+            android.util.Log.println(priority, TAG, displayMessage + '\n' + android.util.Log.getStackTraceString(throwable));
+        }
+
+        LogUtils.writeLog(priority, resolvedTag, msg, throwable);
     }
 }
